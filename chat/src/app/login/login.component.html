@@ -1,1 +1,17 @@
-<p>login works!</p>
+<br>
+<h2>Login to Your Account </h2>
+<br>
+<form>
+  
+  <div>
+    <input type="text" name="email" [(ngModel)]="username" id="formExample1" class="form-control" />
+    <label class="form-label" for="formExample1">Email address</label>
+  </div>
+
+  <div>
+    <input type="text" name="password" [(ngModel)]="password" id="formExample2" class="form-control" />
+    <label class="form-label" for="formExample2">Password</label>
+  </div>
+</form>
+
+<button (click)="submit()"> Submit </button>
