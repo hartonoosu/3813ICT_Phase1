@@ -1,26 +1,43 @@
-import { Component, OnInit } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { CommonModule } from '@angular/common';
+import { Component } from '@angular/core';
+import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
+import { NgIf } from '@angular/common';
+import { RouterOutlet } from '@angular/router';
+import { RouterLink } from '@angular/router';
 
- const httpOptions = {
-      headers: new HttpHeaders({'Content-Type': 'application/json'})
-  };
-
- const BACKEND_URL = 'http://localhost:3000/';
-
-  @Component({
-  selector: 'app-account',
+@Component({
+  selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule],
+  imports: [NgIf, RouterOutlet, RouterLink],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })
+export class NavbarComponent {
+  get isLoggedIn(): boolean {
+    return this.authService.isLoggedIn();
+  }
 
-export class NavbarComponent{
-  userData: any = {};
+  get isAdmin(): boolean {
+    //getUserRole is a method in AuthService that returns the user's role
+    return this.authService.getUserRole() === 'Admin';
+  }
 
-  constructor(private httpClient: HttpClient, private router:Router) {}
+  get isGroupAdmin(): boolean {
+    return this.authService.getUserRole() === 'GroupAdmin';
+  }
 
+  get isUser(): boolean {
+    return this.authService.getUserRole() === 'User';
+  }
 
+  constructor(private authService: AuthService, private router: Router) {}
+
+  logout() {
+    sessionStorage.removeItem('userid');
+    sessionStorage.removeItem('username');
+    sessionStorage.removeItem('useremail');
+    sessionStorage.removeItem('userbirthdate');
+    sessionStorage.removeItem('userage');
+    this.router.navigate(['/login']);
+  }
 }
