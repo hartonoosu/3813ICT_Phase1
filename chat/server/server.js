@@ -15,7 +15,7 @@ app.use(express.urlencoded({
 app.use(express.json());
 
 app.post('/login', require('./router/postLogin'));
-// app.post('/loginafter', require('./router/postLoginAfter'));
+app.post('/loginafter', require('./router/postLoginAfter'));
 
 http.listen(PORT,
     ()=>{

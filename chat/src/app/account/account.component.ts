@@ -35,8 +35,8 @@ export class AccountComponent implements OnInit{
       userid: sessionStorage.getItem("userid"),
       username: sessionStorage.getItem("username"),
       useremail: sessionStorage.getItem("useremail"),
-      userbirthdate: sessionStorage.getItem("userbirthdate"),
-      userage: Number(sessionStorage.getItem("userage"))
+      usergroup: sessionStorage.getItem("usergroup"),
+      userrole: sessionStorage.getItem("userrole")
     };
 
     this.httpClient.post<any>(BACKEND_URL + 'loginafter', userobj, httpOptions)
