@@ -39,7 +39,7 @@ export class LoginComponent {
         sessionStorage.setItem("useremail", data.useremail);
         sessionStorage.setItem("usergroup", data.usergroup.toString());
         sessionStorage.setItem("userchannel", data.userchannel.toString());
-        this.router.navigateByUrl("/dashboard");
+        this.router.navigateByUrl("/account");
     } else {
         alert("Email or password incorrect!");
     }

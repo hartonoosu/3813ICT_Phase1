@@ -26,3 +26,10 @@
     * users.json and extendedUser.json (under *data* directory)
 5.  Install **npm install --save-dev nodemon**, edit package.json under "scripts":    **"start": "server.js"**
 
+#### HTTP
+1.  update app.config.ts
+2.  server
+
+### Login System
+1.  login component, users, extended users, app component, app.routes.ts, server, postLogin
+    Login component handles sessionstorage, subscribe meaning to read and follow the data from server. 
