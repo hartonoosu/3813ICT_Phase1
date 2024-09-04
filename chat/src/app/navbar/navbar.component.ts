@@ -14,30 +14,26 @@ import { RouterLink } from '@angular/router';
 })
 export class NavbarComponent {
   get isLoggedIn(): boolean {
-    return this.authService.isLoggedIn();
+    return this.authService.isLoggedIn;
   }
 
   get isAdmin(): boolean {
     //getUserRole is a method in AuthService that returns the user's role
-    return this.authService.getUserRole() === 'Admin';
+    return this.authService.getUserRole === 'admin';
   }
 
   get isGroupAdmin(): boolean {
-    return this.authService.getUserRole() === 'GroupAdmin';
+    return this.authService.getUserRole ===  'groupadmin';
   }
 
   get isUser(): boolean {
-    return this.authService.getUserRole() === 'User';
+    return this.authService.getUserRole === 'user';
   }
 
   constructor(private authService: AuthService, private router: Router) {}
 
   logout() {
-    sessionStorage.removeItem('userid');
-    sessionStorage.removeItem('username');
-    sessionStorage.removeItem('useremail');
-    sessionStorage.removeItem('userbirthdate');
-    sessionStorage.removeItem('userage');
+    this.authService.logout();
     this.router.navigate(['/login']);
   }
 }
