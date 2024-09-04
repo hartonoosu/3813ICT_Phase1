@@ -1,0 +1,15 @@
+.form-control:disabled {
+  background-color: #6c757d !important; /* Slightly darker background for disabled fields */
+  color: #ffffff !important;            /* White text for better contrast */
+  opacity: 1 !important;                /* Remove default opacity for disabled inputs */
+}
+
+.form-group .form-control:disabled {
+  border-color: #495057 !important;     /* Darker border to add contrast */
+}
+
+.container {
+  background-color: #343a40;
+  border-radius: 5px;
+  max-width: 1000px;
+}

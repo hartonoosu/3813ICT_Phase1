@@ -25,3 +25,7 @@ Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To u
 ## Further help
 
 To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+
+
+Creating an Observable: You define an Observable by specifying what it should do when someone subscribes to it. You can create it to do anything from emitting a sequence of numbers to making an HTTP request.
+Subscribing: When you subscribe to an Observable, you start receiving the values it emits. You can also define how to handle these values, what to do with errors, and what to do once it completes.
