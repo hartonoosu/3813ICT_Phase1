@@ -1,3 +1,4 @@
+_README.md file for assignment is in the root folder_
 # Chat
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.3.8.
