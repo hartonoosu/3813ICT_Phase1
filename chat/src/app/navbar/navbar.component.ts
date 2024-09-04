@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
 import { NgIf } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
@@ -10,30 +9,29 @@ import { RouterLink } from '@angular/router';
   standalone: true,
   imports: [NgIf, RouterOutlet, RouterLink],
   templateUrl: './navbar.component.html',
-  styleUrls: ['./navbar.component.css'] // Corrected the typo from `styleUrl` to `styleUrls`
+  styleUrls: ['./navbar.component.css']
 })
 export class NavbarComponent {
   get isLoggedIn(): boolean {
-    return this.authService.isLoggedIn;
+    return !!sessionStorage.getItem('userrole');
   }
 
   get isAdmin(): boolean {
-    // Call the method to get the user's role
-    return this.authService.getUserRole() === 'admin';
+    return sessionStorage.getItem('userrole') === 'admin';
   }
 
   get isGroupAdmin(): boolean {
-    return this.authService.getUserRole() === 'groupadmin';
+    return sessionStorage.getItem('userrole') === 'groupadmin';
   }
 
   get isUser(): boolean {
-    return this.authService.getUserRole() === 'user';
+    return sessionStorage.getItem('userrole') === 'user';
   }
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(private router: Router) {}
 
   logout() {
-    this.authService.logout();
+    sessionStorage.clear(); // Clear all session storage data on logout
     this.router.navigate(['/login']);
   }
 }

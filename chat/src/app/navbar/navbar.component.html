@@ -5,7 +5,7 @@
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0" *ngIf="isLoggedIn">
         <li class="nav-item">
           <a class="nav-link" routerLink="/dashboard">Dashboard</a>
         </li>
@@ -20,10 +20,10 @@
         <li class="nav-item" *ngIf="isAdmin">
           <a class="nav-link" routerLink="/admin">Admin Settings</a>
         </li>
-        <li class="nav-item">
+        <li class="nav-item" *ngIf="isAdmin">
           <a class="nav-link" routerLink="/groups">Manage Groups</a>
         </li>
-        
+
         <!-- Group Admin-specific links -->
         <li *ngIf="isGroupAdmin" class="nav-item">
           <a class="nav-link" routerLink="/groups">Manage Groups</a>
