@@ -2,5 +2,13 @@
     {
         "username": "super",
         "pwd": "123"
+    },
+    {
+        "username": "groupadmin",
+        "pwd": "123"
+    },
+    {
+        "username": "user",
+        "pwd": "123"
     }
 ]
