@@ -7,3 +7,9 @@
 .form-group .form-control:disabled {
   border-color: #495057 !important;     /* Darker border to add contrast */
 }
+
+.container {
+  background-color: #343a40;
+  border-radius: 5px;
+  max-width: 1000px;
+}

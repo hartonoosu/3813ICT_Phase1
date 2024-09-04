@@ -10,7 +10,7 @@ import { RouterLink } from '@angular/router';
   standalone: true,
   imports: [NgIf, RouterOutlet, RouterLink],
   templateUrl: './navbar.component.html',
-  styleUrl: './navbar.component.css'
+  styleUrls: ['./navbar.component.css'] // Corrected the typo from `styleUrl` to `styleUrls`
 })
 export class NavbarComponent {
   get isLoggedIn(): boolean {
@@ -18,16 +18,16 @@ export class NavbarComponent {
   }
 
   get isAdmin(): boolean {
-    //getUserRole is a method in AuthService that returns the user's role
-    return this.authService.getUserRole === 'admin';
+    // Call the method to get the user's role
+    return this.authService.getUserRole() === 'admin';
   }
 
   get isGroupAdmin(): boolean {
-    return this.authService.getUserRole ===  'groupadmin';
+    return this.authService.getUserRole() === 'groupadmin';
   }
 
   get isUser(): boolean {
-    return this.authService.getUserRole === 'user';
+    return this.authService.getUserRole() === 'user';
   }
 
   constructor(private authService: AuthService, private router: Router) {}
