@@ -1,0 +1,64 @@
+/* Basic Reset */
+body, html {
+    height: 100%;
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+    background: #f4f4f4;
+  }
+  
+  /* Container for the form to center it */
+  .form-container {
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 20px;
+    background: burlywood;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Style for form headers */
+  .form-header {
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 24px;
+    color: #333;
+  }
+  
+  /* Custom style for buttons */
+  .btn-custom {
+    background-color: #007bff; /* Bootstrap primary color */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .btn-custom:hover {
+    background-color: #0056b3; /* Darker shade for hover effect */
+  }
+  
+  /* Custom style for input fields to add more visual interest */
+  input[type="text"],
+  input[type="email"],
+  input[type="number"] {
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    width: 100%; /* Ensures consistency in width */
+  }
+  
+  /* Label styling */
+  label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    display: block;
+    color: #555;
+  }
+  
+  /* Enhancing disabled inputs for better readability */
+  input:disabled {
+    background-color: #e9ecef;
+  }
+  
