@@ -1,41 +1,45 @@
-<div class="container mt-5">
-    <div class="form-container">
-        <h2 class="text-center mb-4">User Management</h2>
-        <form (ngSubmit)="createUser()">
-            <div class="form-group">
-                <label for="username">Username:</label>
-                <input type="text" class="form-control" id="username" name="username" [(ngModel)]="username" required>
-            </div>
+<div class="container text-white mt-5 p-4 rounded">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="form-container">
+                <h2 class="text-center mb-4">User Management</h2>
+                <form (ngSubmit)="createUser()">
+                    <div class="form-group">
+                        <label for="username">Username:</label>
+                        <input type="text" class="form-control" id="username" name="username" [(ngModel)]="username" required>
+                    </div>
 
-            <div class="form-group">
-                <label for="useremail">Email:</label>
-                <input type="email" class="form-control" id="useremail" name="useremail" [(ngModel)]="useremail" required>
-            </div>
+                    <div class="form-group">
+                        <label for="useremail">Email:</label>
+                        <input type="email" class="form-control" id="useremail" name="useremail" [(ngModel)]="useremail" required>
+                    </div>
 
-            <div class="form-group">
-                <label for="userrole">Role:</label>
-                <select class="form-control" id="userrole" name="userrole" [(ngModel)]="userrole" required>
-                    <option value="user">User</option>
-                    <option value="groupadmin">Group Admin</option>
-                    <option value="admin">Admin</option>
-                </select>
-            </div>
+                    <div class="form-group">
+                        <label for="userrole">Role:</label>
+                        <select class="form-control" id="userrole" name="userrole" [(ngModel)]="userrole" required>
+                            <option value="user">User</option>
+                            <option value="groupadmin">Group Admin</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
 
-            <div class="form-group">
-                <label for="usergroup">Group:</label>
-                <input type="text" class="form-control" id="usergroup" name="usergroup" [(ngModel)]="usergroup">
-            </div>
+                    <div class="form-group">
+                        <label for="usergroup">Group:</label>
+                        <input type="text" class="form-control" id="usergroup" name="usergroup" [(ngModel)]="usergroup">
+                    </div>
 
-            <button type="submit" class="btn btn-primary mt-3">Create User</button>
-        </form>
+                    <button type="submit" class="btn btn-primary mt-3 w-100">Create User</button>
+                </form>
 
-        <h3 class="text-center mt-5">Remove User</h3>
-        <form (ngSubmit)="removeUser()">
-            <div class="form-group">
-                <label for="removeUsername">Username:</label>
-                <input type="text" class="form-control" id="removeUsername" name="removeUsername" [(ngModel)]="removeUsername" required>
+                <h3 class="text-center mt-5">Remove User</h3>
+                <form (ngSubmit)="removeUser()">
+                    <div class="form-group">
+                        <label for="removeUsername">Username:</label>
+                        <input type="text" class="form-control" id="removeUsername" name="removeUsername" [(ngModel)]="removeUsername" required>
+                    </div>
+                    <button type="submit" class="btn btn-danger mt-3 w-100">Remove User</button>
+                </form>
             </div>
-            <button type="submit" class="btn btn-danger mt-3">Remove User</button>
-        </form>
+        </div>
     </div>
 </div>

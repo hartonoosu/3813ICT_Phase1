@@ -1,3 +1,5 @@
-body {
-    background-color: #e0f7fa !important; /* Ensures this background color takes precedence */
+html, body {
+    height: 100%; 
+    margin: 0; /* Remove default margins */
+    background: linear-gradient(135deg, #4c2893dd, #037c7c) !important;
 }
