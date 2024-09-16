@@ -25,12 +25,11 @@ module.exports = function(req, res) {
         } else {
             // If a matching user is found, prepare the response data
             let userData = userArray[i];
-
             // Add a success indicator to the userData object
             userData["ok"] = true;
 
             // Remove the password from the response for security reasons
-            delete userData.pwd;
+-           delete userData.pwd;
 
             // Send the user data back as the response
             res.send(userData);

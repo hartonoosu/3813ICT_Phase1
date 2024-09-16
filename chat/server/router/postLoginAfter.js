@@ -5,6 +5,7 @@ module.exports = function(req, res) {
     // Create a user object based on the request body
     let userobj = {
         "userid": req.body.userid,
+        "pwd": req.body.pwd,  // Password right after userid
         "username": req.body.username,
         "useremail": req.body.useremail,
         "usergroup": req.body.usergroup,
@@ -25,18 +26,10 @@ module.exports = function(req, res) {
         uArray = JSON.parse(data);
 
         // Log the user object for debugging
-        console.log(userobj);
+        console.log("test: ", userobj);
 
         // Find the index of the existing user by username
         let i = uArray.findIndex(x => x.username == userobj.username);
-
-        // If the user does not exist, add them to the array
-        if (i == -1) {
-            uArray.push(userobj);
-        } else {
-            // If the user exists, update their information
-            uArray[i] = userobj;
-        }
 
         // Send the updated user data back as the response
         res.send(userobj);

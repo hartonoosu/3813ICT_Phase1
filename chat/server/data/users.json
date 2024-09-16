@@ -1,6 +1,7 @@
 [
   {
     "userid": "1",
+    "pwd": "123",
     "username": "super",
     "useremail": "super@gmail.com",
     "usergroup": "2",
@@ -8,6 +9,7 @@
   },
   {
     "userid": "2",
+    "pwd": "123",
     "username": "groupadmin",
     "useremail": "admin@gmail.com",
     "usergroup": "2",
