@@ -1,0 +1,21 @@
+[
+    {
+      "groupId": "2",
+      "groupName": "Admin Group",
+      "channels": [
+        { "channelId": "101", "channelName": "General" },
+        { "channelId": "102", "channelName": "Announcements" }
+      ],
+      "members": ["1", "2"]
+    },
+    {
+      "groupId": "10",
+      "groupName": "User Group",
+      "channels": [
+        { "channelId": "201", "channelName": "Support" },
+        { "channelId": "202", "channelName": "Discussion" }
+      ],
+      "members": ["48445a2f-b729-42a5-ad82-aab047b12060", "c3ffb885-262a-4d82-82af-fe8efffcdea0"]
+    }
+  ]
+  

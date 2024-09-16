@@ -38,7 +38,7 @@ export class GroupsComponent implements OnInit {
   }
 
   addGroup(): void {
-    if (this.newGroupName.trim()) {
+    if (this.newGroupName.trim()) { //trim is to make sure no unnecessary spaces before and after the input
       this.groups.push(this.newGroupName.trim());
       this.newGroupName = ''; // Clear the input field
     }

@@ -1,30 +1,34 @@
 [
   {
     "username": "super",
-    "pwd": "123"
+    "pwd": "123",
+    "userid": "1",
+    "useremail": "super@gmail.com",
+    "usergroup": "2",
+    "userrole": "admin"
   },
   {
     "username": "groupadmin",
-    "pwd": "123"
+    "pwd": "123",
+    "userid": "2",
+    "useremail": "admin@gmail.com",
+    "usergroup": "2",
+    "userrole": "groupadmin"
   },
   {
     "username": "user2",
-    "pwd": "MIfR7TG7"
+    "pwd": "MIfR7TG7",
+    "userid": "48445a2f-b729-42a5-ad82-aab047b12060",
+    "useremail": "user@gmail.com",
+    "usergroup": "10",
+    "userrole": "user"
   },
   {
     "username": "user3",
-    "pwd": "umlGAJy0"
-  },
-  {
-    "username": "user5",
-    "pwd": "RNLxIJc1"
-  },
-  {
-    "username": "user51",
-    "pwd": "ULreT8U6"
-  },
-  {
-    "username": "user45",
-    "pwd": "6dwAML0Y"
+    "pwd": "umlGAJy0",
+    "userid": "c3ffb885-262a-4d82-82af-fe8efffcdea0",
+    "useremail": "user@gmail.com",
+    "usergroup": "10",
+    "userrole": "user"
   }
 ]
