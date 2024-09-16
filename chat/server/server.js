@@ -15,6 +15,11 @@ app.post('/login', require('./router/postLogin'));
 app.post('/loginafter', require('./router/postLoginAfter'));
 app.post('/createUser', require('./router/postCreateUser'));
 app.delete('/removeUser/:username', require('./router/postRemoveUser'));
+app.get("/get-groups-and-channels", require("./router/getGroupsAndChannels"));
+app.post("/create-group", require("./router/manageGroups"));
+app.post("/create-channel", require("./router/manageChannels"));
+app.delete("/delete-group", require("./router/manageGroups"));
+app.delete("/delete-channel", require("./router/manageChannels"));
 
 http.listen(PORT, () => {
     console.log('Server listening on: ' + PORT);

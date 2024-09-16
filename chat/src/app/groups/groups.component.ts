@@ -5,11 +5,16 @@ import { NgIf } from '@angular/common';
 import { Router } from '@angular/router';
 import { NgFor } from '@angular/common';
 
-
 const httpOptions = {
   headers: new HttpHeaders({ 'Content-Type': 'application/json' })
 }
 const BACKEND_URL = 'http://localhost:3000/';
+
+// Define the interface at the top of the file
+interface Channel {
+  channelId: string;
+  channelName: string;
+}
 
 @Component({
   selector: 'app-groups',
@@ -18,12 +23,10 @@ const BACKEND_URL = 'http://localhost:3000/';
   templateUrl: './groups.component.html',
   styleUrls: ['./groups.component.css']
 })
-
-// TODO: do the real data retrieval!!
-
 export class GroupsComponent implements OnInit {
-  groups: string[] = [];
+  groups: any[] = [];
   newGroupName: string = '';
+  newChannelName: string = '';
 
   constructor(private router: Router, private httpClient: HttpClient) {}
 
@@ -33,18 +36,57 @@ export class GroupsComponent implements OnInit {
       return;
     }
     
-    // Initialize with some default groups
-    this.groups = ['Admin Group', 'User Group', 'Guest Group'];
+    this.getGroups();
+  }
+
+  getGroups(): void {
+    this.httpClient.get(BACKEND_URL + 'get-groups-and-channels', httpOptions).subscribe((data: any) => {
+      this.groups = data;
+    });
   }
 
   addGroup(): void {
-    if (this.newGroupName.trim()) { //trim is to make sure no unnecessary spaces before and after the input
-      this.groups.push(this.newGroupName.trim());
-      this.newGroupName = ''; // Clear the input field
+    if (this.newGroupName.trim()) {
+      this.httpClient.post(BACKEND_URL + 'create-group', { groupName: this.newGroupName.trim() }, httpOptions)
+        .subscribe((newGroup: any) => {
+          this.groups.push(newGroup);
+          this.newGroupName = '';
+        });
     }
   }
 
-  removeGroup(group: string): void {
-    this.groups = this.groups.filter(g => g !== group);
+  removeGroup(groupId: string): void {
+    this.httpClient.delete(BACKEND_URL + 'delete-group', {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+      body: { groupId }
+    }).subscribe(() => {
+      this.groups = this.groups.filter(g => g.groupId !== groupId);
+    });
+  }
+
+  addChannel(groupId: string): void {
+    if (this.newChannelName.trim()) {
+      this.httpClient.post(BACKEND_URL + 'create-channel', { groupId, channelName: this.newChannelName.trim() }, httpOptions)
+        .subscribe((newChannel: any) => {
+          const group = this.groups.find(g => g.groupId === groupId);
+          if (group) {
+            group.channels.push(newChannel);
+          }
+          this.newChannelName = '';
+        });
+    }
+  }
+
+  removeChannel(groupId: string, channelId: string): void {
+    this.httpClient.delete(BACKEND_URL + 'delete-channel', {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+      body: { groupId, channelId }
+    }).subscribe(() => {
+      const group = this.groups.find(g => g.groupId === groupId);
+      if (group) {
+        group.channels = group.channels.filter((c: Channel) => c.channelId !== channelId);
+      }
+    });
   }
 }
+
