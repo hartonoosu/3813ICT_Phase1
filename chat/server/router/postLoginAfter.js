@@ -1,6 +1,8 @@
 const fs = require("fs");
+const path = require("path");
 
 module.exports = function(req, res) {
+    // Create a user object based on the request body
     let userobj = {
         "userid": req.body.userid,
         "username": req.body.username,
@@ -8,26 +10,42 @@ module.exports = function(req, res) {
         "usergroup": req.body.usergroup,
         "userrole": req.body.userrole
     };
+
+    // Path to the users data file
+    const usersFilePath = path.join(__dirname, "../data/users.json");
+
+    // Initialize an array to hold the users data
     let uArray = [];
-    fs.readFile("./data/extendedUsers.json", "utf-8", function(err, data) {
-      //open the file of user list
+
+    // Read the users.json file
+    fs.readFile(usersFilePath, "utf-8", function(err, data) {
         if (err) throw err;
+
+        // Parse the JSON data into an array
         uArray = JSON.parse(data);
+
+        // Log the user object for debugging
         console.log(userobj);
-        //make some change according to user's post
+
+        // Find the index of the existing user by username
         let i = uArray.findIndex(x => x.username == userobj.username);
 
+        // If the user does not exist, add them to the array
         if (i == -1) {
             uArray.push(userobj);
         } else {
+            // If the user exists, update their information
             uArray[i] = userobj;
         }
-        // send response to user
-        //res.send(uArray);
-        res.send(userobj); //send only the affected user's data back
-        // save the file of user list
-        let uArrayJson = JSON.stringify(uArray);
-        fs.writeFile("./data/extendedUsers.json", uArrayJson, "utf-8", function(err) {
+
+        // Send the updated user data back as the response
+        res.send(userobj);
+
+        // Convert the updated users array back to JSON
+        let uArrayJson = JSON.stringify(uArray, null, 2); // The `null, 2` adds indentation for readability
+
+        // Write the updated users array back to users.json
+        fs.writeFile(usersFilePath, uArrayJson, "utf-8", function(err) {
             if (err) throw err;
         });
     });
