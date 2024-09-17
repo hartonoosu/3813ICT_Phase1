@@ -6,10 +6,6 @@
       {
         "channelId": "101",
         "channelName": "General"
-      },
-      {
-        "channelId": "1726534084347",
-        "channelName": "s"
       }
     ],
     "members": [
@@ -36,16 +32,12 @@
     ]
   },
   {
-    "groupId": "1726499208332",
-    "groupName": "sss",
+    "groupId": "1726536533749",
+    "groupName": "ABC Group",
     "channels": [
       {
-        "channelId": "1726534125664",
+        "channelId": "1726536546929",
         "channelName": "Introduction"
-      },
-      {
-        "channelId": "1726534196960",
-        "channelName": "Rules"
       }
     ],
     "members": []

@@ -27,6 +27,7 @@ export class GroupsComponent implements OnInit {
   groups: any[] = [];
   newGroupName: string = '';
   newChannelName: { [key: string]: string } = {}; // Initialize as an object
+  newUserId: { [key: string]: string } = {}; // Store user IDs by group
 
   constructor(private router: Router, private httpClient: HttpClient) {}
 
@@ -88,5 +89,31 @@ export class GroupsComponent implements OnInit {
       }
     });
   }
+
+  addUserToGroup(groupId: string): void {
+    if (this.newUserId[groupId]?.trim()) {
+      this.httpClient.post(BACKEND_URL + 'add-user-to-group', { groupId, userId: this.newUserId[groupId].trim() }, httpOptions)
+        .subscribe((response: any) => {
+          // Update the group with the new user
+          const group = this.groups.find(g => g.groupId === groupId);
+          if (group) {
+            group.members.push(this.newUserId[groupId].trim());
+          }
+          this.newUserId[groupId] = ''; // Clear the input field
+      });
+    }
+  }
+
+  removeUserFromGroup(groupId: string, userId: string): void {
+    this.httpClient.post(BACKEND_URL + 'remove-user-from-group', { groupId, userId }, httpOptions)
+      .subscribe((response: any) => {
+        const group = this.groups.find(g => g.groupId === groupId);
+        if (group) {
+          group.members = group.members.filter((id: string) => id !== userId);  // Explicitly typed as string
+        }
+      });
+  }
+  
+  
 }
 
