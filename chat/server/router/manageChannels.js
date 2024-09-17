@@ -11,6 +11,7 @@ module.exports = function(req, res) {
 
             let groups = JSON.parse(data);
             const { groupId, channelName } = req.body;
+            const trimmedChannelName = channelName.trim().toLowerCase();
 
             // Find the group by ID
             const group = groups.find(g => g.groupId === groupId);
@@ -19,15 +20,15 @@ module.exports = function(req, res) {
                 return res.status(404).send({ error: "Group not found" });
             }
 
-            // Check if the channel name already exists in this group
-            if (group.channels.some(channel => channel.channelName.toLowerCase() === channelName.trim().toLowerCase())) {
+            // Check if the channel name already exists in the group
+            if (group.channels.some(channel => channel.channelName.toLowerCase() === trimmedChannelName)) {
                 return res.status(400).send({ error: "Channel name already exists in this group" });
             }
 
             // Create a new channel
             const newChannel = {
                 channelId: Date.now().toString(),  // Unique ID based on timestamp
-                channelName: channelName.trim()
+                channelName: trimmedChannelName
             };
 
             // Add the new channel to the group

@@ -96,7 +96,7 @@ export class GroupsComponent implements OnInit {
                 this.newChannelName[groupId] = ''; // Clear the input field for this group
             },
             error: (err) => {
-                if (err.status === 400 && err.error.error === "Channel name already exists") {
+                if (err.status === 400 && err.error.error === "Channel name already exists in this group") {
                     alert("Channel name already exists in this group!");
                 } else {
                     alert("An error occurred while creating the channel.");
