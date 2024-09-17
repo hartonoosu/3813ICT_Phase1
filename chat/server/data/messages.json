@@ -1,0 +1,35 @@
+[
+    {
+      "messageId": "msg1",
+      "channelId": "101",
+      "userId": "1",
+      "username": "super",
+      "content": "Welcome to the Admin Group!",
+      "timestamp": "2024-09-16T08:00:00Z"
+    },
+    {
+      "messageId": "msg2",
+      "channelId": "101",
+      "userId": "2",
+      "username": "groupadmin",
+      "content": "Thanks! Glad to be here.",
+      "timestamp": "2024-09-16T08:01:00Z"
+    },
+    {
+      "messageId": "msg3",
+      "channelId": "201",
+      "userId": "48445a2f-b729-42a5-ad82-aab047b12060",
+      "username": "user2",
+      "content": "How can I get support?",
+      "timestamp": "2024-09-16T09:00:00Z"
+    },
+    {
+      "messageId": "msg4",
+      "channelId": "201",
+      "userId": "c3ffb885-262a-4d82-82af-fe8efffcdea0",
+      "username": "user3",
+      "content": "I need help with my account.",
+      "timestamp": "2024-09-16T09:05:00Z"
+    }
+  ]
+  
