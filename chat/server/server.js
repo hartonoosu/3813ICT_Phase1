@@ -22,6 +22,8 @@ app.delete("/delete-group", require("./router/manageGroups"));
 app.delete("/delete-channel", require("./router/manageChannels"));
 app.post("/add-user-to-group", require("./router/manageUsers"));
 app.post("/remove-user-from-group", require("./router/manageUsers"));
+app.post("/add-user-to-channel", require("./router/addUserToChannel"));
+
 
 http.listen(PORT, () => {
     console.log('Server listening on: ' + PORT);

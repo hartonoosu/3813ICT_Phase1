@@ -4,13 +4,17 @@
     "groupName": "Admin Group",
     "channels": [
       {
-        "channelId": "101",
-        "channelName": "General"
+        "channelId": "1726549545918",
+        "channelName": "introduction",
+        "members": [
+          "super",
+          "groupadmin"
+        ]
       }
     ],
     "members": [
-      "1",
-      "2"
+      "super",
+      "groupadmin"
     ]
   },
   {
@@ -37,7 +41,14 @@
     "channels": [
       {
         "channelId": "1726542392390",
-        "channelName": "introduction"
+        "channelName": "introduction",
+        "members": [
+          "super"
+        ]
+      },
+      {
+        "channelId": "1726546447469",
+        "channelName": "rules"
       }
     ],
     "members": [

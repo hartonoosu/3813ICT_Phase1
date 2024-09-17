@@ -13,6 +13,7 @@ const BACKEND_URL = 'http://localhost:3000/';
 interface Channel {
   channelId: string;
   channelName: string;
+  members?: string[]; // Add this to ensure members are recognized
 }
 
 @Component({
@@ -27,6 +28,7 @@ export class GroupsComponent implements OnInit {
   newGroupName: string = '';
   newChannelName: { [key: string]: string } = {}; // Initialize as an object
   newUserId: { [key: string]: string } = {}; // Store user IDs by group
+  newUserToChannel: { [key: string]: { [key: string]: string } } = {}; // Initialize as an object of objects
 
   constructor(private router: Router, private httpClient: HttpClient) { }
 
@@ -42,6 +44,18 @@ export class GroupsComponent implements OnInit {
   getGroups(): void {
     this.httpClient.get(BACKEND_URL + 'get-groups-and-channels', httpOptions).subscribe((data: any) => {
       this.groups = data;
+
+      // Initialize newUserToChannel for each group and channel
+      this.groups.forEach(group => {
+        this.newUserToChannel[group.groupId] = {};
+        group.channels.forEach((channel: Channel) => {
+          this.newUserToChannel[group.groupId][channel.channelId] = '';
+          // Initialize channel members if not already defined
+          if (!channel.members) {
+            channel.members = [];
+          }
+        });
+      });
     });
   }
 
@@ -57,6 +71,7 @@ export class GroupsComponent implements OnInit {
       .subscribe({
         next: (newGroup: any) => {
           this.groups.push(newGroup);
+          this.newUserToChannel[newGroup.groupId] = {}; // Initialize the channels for the new group
           this.newGroupName = ''; // Clear the input field
         },
         error: (err) => {
@@ -77,6 +92,7 @@ export class GroupsComponent implements OnInit {
         body: { groupId }
       }).subscribe(() => {
         this.groups = this.groups.filter(g => g.groupId !== groupId);
+        delete this.newUserToChannel[groupId]; // Remove the associated channels
       });
     }
   }
@@ -95,6 +111,7 @@ export class GroupsComponent implements OnInit {
           const group = this.groups.find(g => g.groupId === groupId);
           if (group) {
             group.channels.push(newChannel);
+            this.newUserToChannel[groupId][newChannel.channelId] = ''; // Initialize the new channel in newUserToChannel
           }
           this.newChannelName[groupId] = ''; // Clear the input field for this group
         },
@@ -118,6 +135,7 @@ export class GroupsComponent implements OnInit {
       }).subscribe(() => {
         if (group) {
           group.channels = group.channels.filter((c: Channel) => c.channelId !== channelId);
+          delete this.newUserToChannel[groupId][channelId]; // Remove the channel from newUserToChannel
         }
       });
     }
@@ -168,5 +186,51 @@ export class GroupsComponent implements OnInit {
         });
     }
   }
-  
+
+  addUserToChannel(groupId: string, channelId: string): void {
+    // Initialize the nested object if it doesn't exist
+    if (!this.newUserToChannel[groupId]) {
+      this.newUserToChannel[groupId] = {};
+    }
+
+    if (!this.newUserToChannel[groupId][channelId]) {
+      this.newUserToChannel[groupId][channelId] = '';
+    }
+
+    const username = this.newUserToChannel[groupId][channelId]?.trim();
+    if (!username) {
+      alert("Username cannot be empty!");
+      return;
+    }
+
+    // Check if the user is already a member of the group
+    const group = this.groups.find(g => g.groupId === groupId);
+    if (!group) {
+      alert("Group not found!");
+      return;
+    }
+
+    const isMember = group.members.includes(username);
+    if (!isMember) {
+      alert("User must be a member of the group to be added to the channel!");
+      return;
+    }
+
+    this.httpClient.post(BACKEND_URL + 'add-user-to-channel', { groupId, channelId, username }, httpOptions)
+      .subscribe({
+        next: (response: any) => {
+          // Update the local channel's members list
+          const channel = group.channels.find((c: Channel) => c.channelId === channelId);
+          if (channel && channel.members) {
+            channel.members.push(username);
+          }
+          alert('User added to channel successfully');
+          this.newUserToChannel[groupId][channelId] = ''; // Clear the input field
+        },
+        error: (err) => {
+          alert(err.error.error || "An error occurred while adding the user to the channel.");
+        }
+      });
+  }
+
 }
