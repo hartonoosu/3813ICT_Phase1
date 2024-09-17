@@ -28,14 +28,14 @@ export class GroupsComponent implements OnInit {
   newChannelName: { [key: string]: string } = {}; // Initialize as an object
   newUserId: { [key: string]: string } = {}; // Store user IDs by group
 
-  constructor(private router: Router, private httpClient: HttpClient) {}
+  constructor(private router: Router, private httpClient: HttpClient) { }
 
   ngOnInit(): void {
     if (!sessionStorage.getItem('userid')) {
       this.router.navigate(['/login']);
       return;
     }
-    
+
     this.getGroups();
   }
 
@@ -49,24 +49,24 @@ export class GroupsComponent implements OnInit {
     const trimmedGroupName = this.newGroupName.trim();
 
     if (!trimmedGroupName) {
-        alert("Group name cannot be empty!");
-        return;
+      alert("Group name cannot be empty!");
+      return;
     }
 
     this.httpClient.post(BACKEND_URL + 'create-group', { groupName: trimmedGroupName }, httpOptions)
-        .subscribe({
-            next: (newGroup: any) => {
-                this.groups.push(newGroup);
-                this.newGroupName = ''; // Clear the input field
-            },
-            error: (err) => {
-                if (err.status === 400 && err.error.error === "Group name already exists") {
-                    alert("Group name already exists!");  // Display alert if duplicate detected
-                } else {
-                    alert("An error occurred while creating the group.");
-                }
-            }
-        });
+      .subscribe({
+        next: (newGroup: any) => {
+          this.groups.push(newGroup);
+          this.newGroupName = ''; // Clear the input field
+        },
+        error: (err) => {
+          if (err.status === 400 && err.error.error === "Group name already exists") {
+            alert("Group name already exists!");  // Display alert if duplicate detected
+          } else {
+            alert("An error occurred while creating the group.");
+          }
+        }
+      });
   }
 
   removeGroup(groupId: string): void {
@@ -82,27 +82,27 @@ export class GroupsComponent implements OnInit {
     const trimmedChannelName = this.newChannelName[groupId]?.trim();
 
     if (!trimmedChannelName) {
-        alert("Channel name cannot be empty!");
-        return;
+      alert("Channel name cannot be empty!");
+      return;
     }
 
     this.httpClient.post(BACKEND_URL + 'create-channel', { groupId, channelName: trimmedChannelName }, httpOptions)
-        .subscribe({
-            next: (newChannel: any) => {
-                const group = this.groups.find(g => g.groupId === groupId);
-                if (group) {
-                    group.channels.push(newChannel);
-                }
-                this.newChannelName[groupId] = ''; // Clear the input field for this group
-            },
-            error: (err) => {
-                if (err.status === 400 && err.error.error === "Channel name already exists in this group") {
-                    alert("Channel name already exists in this group!");
-                } else {
-                    alert("An error occurred while creating the channel.");
-                }
-            }
-        });
+      .subscribe({
+        next: (newChannel: any) => {
+          const group = this.groups.find(g => g.groupId === groupId);
+          if (group) {
+            group.channels.push(newChannel);
+          }
+          this.newChannelName[groupId] = ''; // Clear the input field for this group
+        },
+        error: (err) => {
+          if (err.status === 400 && err.error.error === "Channel name already exists in this group") {
+            alert("Channel name already exists in this group!");
+          } else {
+            alert("An error occurred while creating the channel.");
+          }
+        }
+      });
   }
 
   removeChannel(groupId: string, channelId: string): void {
@@ -118,39 +118,49 @@ export class GroupsComponent implements OnInit {
   }
 
   addUserToGroup(groupId: string): void {
-    const trimmedUserId = this.newUserId[groupId]?.trim();
+    const trimmedUsername = this.newUserId[groupId]?.trim();  // Assuming `newUserId` now holds the username
 
-    if (!trimmedUserId) {
-        alert("User ID cannot be empty!");
-        return;
+    if (!trimmedUsername) {
+      alert("Username cannot be empty!");
+      return;
     }
 
-    this.httpClient.post(BACKEND_URL + 'add-user-to-group', { groupId, userId: trimmedUserId }, httpOptions)
-        .subscribe({
-            next: (response: any) => {
-                const group = this.groups.find(g => g.groupId === groupId);
-                if (group) {
-                    group.members.push(trimmedUserId);
-                }
-                this.newUserId[groupId] = ''; // Clear the input field
-            },
-            error: (err) => {
-                if (err.status === 400 && err.error.error === "User already in group") {
-                    alert("User is already a member of this group!");
-                } else {
-                    alert("An error occurred while adding the user to the group.");
-                }
-            }
-        });
-  }
-
-  removeUserFromGroup(groupId: string, userId: string): void {
-    this.httpClient.post(BACKEND_URL + 'remove-user-from-group', { groupId, userId }, httpOptions)
-      .subscribe(() => {
-        const group = this.groups.find(g => g.groupId === groupId);
-        if (group) {
-          group.members = group.members.filter((id: string) => id !== userId);  // Explicitly typed as string
+    this.httpClient.post(BACKEND_URL + 'add-user-to-group', { groupId, username: trimmedUsername }, httpOptions)
+      .subscribe({
+        next: (response: any) => {
+          const group = this.groups.find(g => g.groupId === groupId);
+          if (group) {
+            group.members.push(trimmedUsername);
+          }
+          this.newUserId[groupId] = ''; // Clear the input field
+        },
+        error: (err) => {
+          if (err.status === 400 && err.error.error === "User does not exist") {
+            alert("User does not exist!");
+          } else if (err.status === 400 && err.error.error === "User already in group") {
+            alert("User is already a member of this group!");
+          } else {
+            alert("An error occurred while adding the user to the group.");
+          }
         }
       });
   }
+
+  removeUserFromGroup(groupId: string, username: string): void {
+    if (confirm(`Are you sure you want to remove ${username} from this group?`)) {
+      this.httpClient.post(BACKEND_URL + 'remove-user-from-group', { groupId, username }, httpOptions)
+        .subscribe({
+          next: () => {
+            const group = this.groups.find(g => g.groupId === groupId);
+            if (group) {
+              group.members = group.members.filter((member: string) => member !== username);
+            }
+          },
+          error: (err) => {
+            alert(err.error.error || "An error occurred while removing the user from the group.");
+          }
+        });
+    }
+  }
+  
 }
