@@ -32,16 +32,17 @@
     ]
   },
   {
-    "groupId": "1726541789739",
+    "groupId": "1726542387244",
     "groupName": "ABC Group",
     "channels": [
       {
-        "channelId": "1726541796697",
+        "channelId": "1726542392390",
         "channelName": "introduction"
       }
     ],
     "members": [
-      "super"
+      "super",
+      "groupadmin"
     ]
   }
 ]

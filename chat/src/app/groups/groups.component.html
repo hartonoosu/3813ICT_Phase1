@@ -40,8 +40,8 @@
             <!-- Form to add a new user to the group -->
             <form (ngSubmit)="addUserToGroup(group.groupId)" class="mb-4">
                 <div class="form-group">
-                    <label for="newUserId-{{group.groupId}}">Add User to Group:</label>
-                    <input type="text" class="form-control" id="newUserId-{{group.groupId}}" name="newUserId" [(ngModel)]="newUserId[group.groupId]" placeholder="Enter user ID" required>
+                    <label for="newUserId-{{group.groupId}}">Add User to Group by Username:</label>
+                    <input type="text" class="form-control" id="newUserId-{{group.groupId}}" name="newUserId" [(ngModel)]="newUserId[group.groupId]" placeholder="Enter username" required>
                 </div>
                 <button type="submit" class="btn btn-primary btn-sm mt-2">Add User</button>
             </form>

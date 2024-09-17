@@ -70,12 +70,15 @@ export class GroupsComponent implements OnInit {
   }
 
   removeGroup(groupId: string): void {
-    this.httpClient.delete(BACKEND_URL + 'delete-group', {
-      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
-      body: { groupId }
-    }).subscribe(() => {
-      this.groups = this.groups.filter(g => g.groupId !== groupId);
-    });
+    const group = this.groups.find(g => g.groupId === groupId);
+    if (group && confirm(`Are you sure you want to remove the group "${group.groupName}"?`)) {
+      this.httpClient.delete(BACKEND_URL + 'delete-group', {
+        headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+        body: { groupId }
+      }).subscribe(() => {
+        this.groups = this.groups.filter(g => g.groupId !== groupId);
+      });
+    }
   }
 
   addChannel(groupId: string): void {
@@ -106,15 +109,18 @@ export class GroupsComponent implements OnInit {
   }
 
   removeChannel(groupId: string, channelId: string): void {
-    this.httpClient.delete(BACKEND_URL + 'delete-channel', {
-      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
-      body: { groupId, channelId }
-    }).subscribe(() => {
-      const group = this.groups.find(g => g.groupId === groupId);
-      if (group) {
-        group.channels = group.channels.filter((c: Channel) => c.channelId !== channelId);
-      }
-    });
+    const group = this.groups.find(g => g.groupId === groupId);
+    const channel = group?.channels.find((c: Channel) => c.channelId === channelId);
+    if (channel && confirm(`Are you sure you want to remove the channel "${channel.channelName}"?`)) {
+      this.httpClient.delete(BACKEND_URL + 'delete-channel', {
+        headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+        body: { groupId, channelId }
+      }).subscribe(() => {
+        if (group) {
+          group.channels = group.channels.filter((c: Channel) => c.channelId !== channelId);
+        }
+      });
+    }
   }
 
   addUserToGroup(groupId: string): void {
