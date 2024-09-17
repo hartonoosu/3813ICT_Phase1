@@ -14,5 +14,13 @@
     "useremail": "admin@gmail.com",
     "usergroup": "2",
     "userrole": "groupadmin"
+  },
+  {
+    "userid": "26498",
+    "username": "user",
+    "pwd": "dTLXlRhO",
+    "useremail": "user@gmail.com",
+    "usergroup": "Admin Group",
+    "userrole": "user"
   }
 ]

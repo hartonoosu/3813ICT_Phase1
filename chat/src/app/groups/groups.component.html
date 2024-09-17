@@ -30,7 +30,10 @@
               </div>
               <!-- Members of the channel -->
               <ul class="mt-2">
-                <li *ngFor="let member of channel.members" class="text-white">- {{ member }}</li>
+                <li *ngFor="let member of channel.members" class="d-flex justify-content-between align-items-center">
+                  <span class="text-white">- {{ member }}</span>
+                  <button class="btn btn-danger btn-sm" (click)="removeUserFromChannel(group.groupId, channel.channelId, member)">Remove</button>
+                </li>
               </ul>
             </div>
           </li>

@@ -203,34 +203,42 @@ export class GroupsComponent implements OnInit {
       return;
     }
 
-    // Check if the user is already a member of the group
-    const group = this.groups.find(g => g.groupId === groupId);
-    if (!group) {
-      alert("Group not found!");
-      return;
-    }
-
-    const isMember = group.members.includes(username);
-    if (!isMember) {
-      alert("User must be a member of the group to be added to the channel!");
-      return;
-    }
-
     this.httpClient.post(BACKEND_URL + 'add-user-to-channel', { groupId, channelId, username }, httpOptions)
       .subscribe({
         next: (response: any) => {
-          // Update the local channel's members list
-          const channel = group.channels.find((c: Channel) => c.channelId === channelId);
-          if (channel && channel.members) {
-            channel.members.push(username);
+          const group = this.groups.find(g => g.groupId === groupId);
+          if (group) {
+            const channel = group.channels.find((c: Channel) => c.channelId === channelId);
+            if (channel && channel.members) {
+              channel.members.push(username);
+            }
           }
-          alert('User added to channel successfully');
           this.newUserToChannel[groupId][channelId] = ''; // Clear the input field
         },
         error: (err) => {
           alert(err.error.error || "An error occurred while adding the user to the channel.");
         }
       });
+  }
+
+  removeUserFromChannel(groupId: string, channelId: string, username: string): void {
+    if (confirm(`Are you sure you want to remove ${username} from this channel?`)) {
+      this.httpClient.post(BACKEND_URL + 'remove-user-from-channel', { groupId, channelId, username }, httpOptions)
+        .subscribe({
+          next: () => {
+            const group = this.groups.find(g => g.groupId === groupId);
+            if (group) {
+              const channel = group.channels.find((c: Channel) => c.channelId === channelId);
+              if (channel && channel.members) {
+                channel.members = channel.members.filter((member: string) => member !== username);
+              }
+            }
+          },
+          error: (err) => {
+            alert(err.error.error || "An error occurred while removing the user from the channel.");
+          }
+        });
+    }
   }
 
 }
