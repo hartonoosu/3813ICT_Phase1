@@ -10,9 +10,18 @@ module.exports = function(req, res) {
             if (err) throw err;
 
             let groups = JSON.parse(data);
+            const newGroupName = req.body.groupName.trim();
+
+            // Check if the group name already exists
+            const groupExists = groups.some(group => group.groupName.toLowerCase() === newGroupName.toLowerCase());
+
+            if (groupExists) {
+                return res.status(400).send({ error: "Group name already exists" });
+            }
+
             const newGroup = {
                 groupId: Date.now().toString(),  // Unique ID based on timestamp
-                groupName: req.body.groupName,
+                groupName: newGroupName,
                 channels: [],
                 members: []
             };

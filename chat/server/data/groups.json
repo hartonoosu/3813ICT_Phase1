@@ -32,14 +32,9 @@
     ]
   },
   {
-    "groupId": "1726536533749",
+    "groupId": "1726539473962",
     "groupName": "ABC Group",
-    "channels": [
-      {
-        "channelId": "1726536546929",
-        "channelName": "Introduction"
-      }
-    ],
+    "channels": [],
     "members": []
   }
 ]
