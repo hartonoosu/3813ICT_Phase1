@@ -16,19 +16,11 @@
     "userrole": "groupadmin"
   },
   {
-    "username": "user2",
-    "pwd": "MIfR7TG7",
-    "userid": "48445a2f-b729-42a5-ad82-aab047b12060",
-    "useremail": "user@gmail.com",
-    "usergroup": "10",
-    "userrole": "user"
-  },
-  {
+    "userid": "76265",
     "username": "user3",
-    "pwd": "umlGAJy0",
-    "userid": "c3ffb885-262a-4d82-82af-fe8efffcdea0",
-    "useremail": "user@gmail.com",
-    "usergroup": "10",
+    "pwd": "aEeZm29e",
+    "useremail": "",
+    "usergroup": "User Group",
     "userrole": "user"
   }
 ]
