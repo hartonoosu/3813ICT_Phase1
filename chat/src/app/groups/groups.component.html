@@ -26,7 +26,7 @@
             <form (ngSubmit)="addChannel(group.groupId)">
                 <div class="form-group">
                     <label for="newChannelName-{{group.groupId}}">New Channel Name:</label>
-                    <input type="text" class="form-control" id="newChannelName-{{group.groupId}}" name="newChannelName" [(ngModel)]="newChannelName[group.groupId]" placeholder="Enter channel name" required>
+                    <input type="text" class="form-control" id="newChannelName-{{group.groupId}}" name="newChannelName-{{group.groupId}}" [(ngModel)]="newChannelName[group.groupId]" placeholder="Enter channel name" required>
                 </div>
                 <button type="submit" class="btn btn-primary btn-sm mt-2">Add Channel</button>
             </form>

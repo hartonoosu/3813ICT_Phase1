@@ -26,7 +26,7 @@ interface Channel {
 export class GroupsComponent implements OnInit {
   groups: any[] = [];
   newGroupName: string = '';
-  newChannelName: string = '';
+  newChannelName: { [key: string]: string } = {}; // Initialize as an object
 
   constructor(private router: Router, private httpClient: HttpClient) {}
 
@@ -65,14 +65,14 @@ export class GroupsComponent implements OnInit {
   }
 
   addChannel(groupId: string): void {
-    if (this.newChannelName.trim()) {
-      this.httpClient.post(BACKEND_URL + 'create-channel', { groupId, channelName: this.newChannelName.trim() }, httpOptions)
+    if (this.newChannelName[groupId]?.trim()) {
+      this.httpClient.post(BACKEND_URL + 'create-channel', { groupId, channelName: this.newChannelName[groupId].trim() }, httpOptions)
         .subscribe((newChannel: any) => {
           const group = this.groups.find(g => g.groupId === groupId);
           if (group) {
             group.channels.push(newChannel);
           }
-          this.newChannelName = '';
+          this.newChannelName[groupId] = ''; // Clear the input field for this group
         });
     }
   }

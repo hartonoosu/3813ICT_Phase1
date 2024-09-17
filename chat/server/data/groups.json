@@ -6,6 +6,10 @@
       {
         "channelId": "101",
         "channelName": "General"
+      },
+      {
+        "channelId": "1726534084347",
+        "channelName": "s"
       }
     ],
     "members": [
@@ -30,5 +34,20 @@
       "48445a2f-b729-42a5-ad82-aab047b12060",
       "c3ffb885-262a-4d82-82af-fe8efffcdea0"
     ]
+  },
+  {
+    "groupId": "1726499208332",
+    "groupName": "sss",
+    "channels": [
+      {
+        "channelId": "1726534125664",
+        "channelName": "Introduction"
+      },
+      {
+        "channelId": "1726534196960",
+        "channelName": "Rules"
+      }
+    ],
+    "members": []
   }
 ]
