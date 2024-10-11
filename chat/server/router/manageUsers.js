@@ -1,7 +1,10 @@
 import User from '../models/User.js';
 import Group from '../models/Group.js';
+import mongoose from 'mongoose';
 
-export default async function(req, res) {
+const { ObjectId } = mongoose.Types;
+
+export default async function (req, res) {
     try {
         // Add User to Group
         if (req.method === "POST" && req.url === "/add-user-to-group") {
@@ -13,6 +16,16 @@ export default async function(req, res) {
                 return res.status(400).send({ error: "Group ID and Username are required" });
             }
 
+            // Convert groupId to ObjectId
+
+            console.log("Received groupId:", groupId);
+
+            if (!ObjectId.isValid(groupId)) {
+                console.error("Invalid Group ID");
+                return res.status(400).send({ error: "Invalid Group ID" });
+            }
+            const groupObjectId = new ObjectId(groupId);
+
             // Find the user in the database
             const user = await User.findOne({ username: { $regex: new RegExp(`^${username}$`, 'i') } });
             if (!user) {
@@ -21,7 +34,7 @@ export default async function(req, res) {
             }
 
             // Find the group in the database
-            const group = await Group.findById(groupId);
+            const group = await Group.findById(groupObjectId);
             if (!group) {
                 console.error("Group not found:", groupId);
                 return res.status(404).send({ error: "Group not found" });
@@ -42,18 +55,24 @@ export default async function(req, res) {
         // Remove User from Group
         } else if (req.method === "POST" && req.url === "/remove-user-from-group") {
             const { groupId, username } = req.body;
-
-            // Validate request data
+          
             if (!groupId || !username) {
-                console.error("Group ID or Username is missing in the request");
-                return res.status(400).send({ error: "Group ID and Username are required" });
+              console.error("Group ID or Username is missing in the request");
+              return res.status(400).send({ error: "Group ID and Username are required" });
             }
-
-            // Find the group in the database
-            const group = await Group.findById(groupId);
+          
+            // Convert groupId to ObjectId
+            if (!ObjectId.isValid(groupId)) {
+              console.error("Invalid Group ID");
+              return res.status(400).send({ error: "Invalid Group ID" });
+            }
+            const groupObjectId = new ObjectId(groupId);
+          
+            // Proceed with finding the group
+            const group = await Group.findById(groupObjectId);
             if (!group) {
-                console.error("Group not found:", groupId);
-                return res.status(404).send({ error: "Group not found" });
+              console.error("Group not found:", groupId);
+              return res.status(404).send({ error: "Group not found" });
             }
 
             // Find the user in the group
@@ -63,7 +82,7 @@ export default async function(req, res) {
                 return res.status(400).send({ error: "User does not exist" });
             }
 
-            const userIndex = group.members.indexOf(user._id);
+            const userIndex = group.members.findIndex(id => id.toString() === user._id.toString());
             if (userIndex === -1) {
                 console.error("User not found in group:", username);
                 return res.status(404).send({ error: "User not found in group" });
@@ -79,7 +98,7 @@ export default async function(req, res) {
             res.status(405).send({ error: "Method not allowed" });
         }
     } catch (err) {
-        console.error("An error occurred:", err);
+        console.error("An error occurred during operation:", err);
         res.status(500).send({ error: "Internal server error" });
     }
 }

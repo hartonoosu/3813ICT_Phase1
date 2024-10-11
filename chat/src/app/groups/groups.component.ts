@@ -10,11 +10,25 @@ const httpOptions = {
 }
 const BACKEND_URL = 'http://localhost:3000/';
 
+interface Member {
+  _id: string; // MongoDB ObjectId
+  username: string; // Populated username field
+}
+
 interface Channel {
   channelId: string;
   channelName: string;
-  members?: string[]; // Add this to ensure members are recognized
+  members?: { _id: string; username: string }[]; // Include _id for reference
 }
+
+interface Group {
+  groupId: string;
+  groupName: string;
+  members: { _id: string; username: string }[]; // Include _id for reference
+  channels: Channel[];
+}
+
+
 
 @Component({
   selector: 'app-groups',
@@ -24,11 +38,11 @@ interface Channel {
   styleUrls: ['./groups.component.css']
 })
 export class GroupsComponent implements OnInit {
-  groups: any[] = [];
+  groups: Group[] = [];
   newGroupName: string = '';
-  newChannelName: { [key: string]: string } = {}; // Initialize as an object
-  newUserId: { [key: string]: string } = {}; // Store user IDs by group
-  newUserToChannel: { [key: string]: { [key: string]: string } } = {}; // Initialize as an object of objects
+  newChannelName: { [key: string]: string } = {}; // Store new channel names by group ID
+  newUserId: { [key: string]: string } = {}; // Store user IDs (actually usernames) by group ID
+  newUserToChannel: { [key: string]: { [key: string]: string } } = {}; // Store user assignments by group ID and channel ID
 
   constructor(private router: Router, private httpClient: HttpClient) { }
 
@@ -42,34 +56,32 @@ export class GroupsComponent implements OnInit {
   }
 
   getGroups(): void {
-    this.httpClient.get(BACKEND_URL + 'get-groups-and-channels', httpOptions).subscribe((data: any) => {
+    this.httpClient.get<Group[]>(BACKEND_URL + 'get-groups-and-channels', httpOptions).subscribe((data: Group[]) => {
       this.groups = data;
-
+  
       // Initialize newUserToChannel for each group and channel
-      this.groups.forEach(group => {
+      this.groups.forEach((group: Group) => {
         this.newUserToChannel[group.groupId] = {};
         group.channels.forEach((channel: Channel) => {
           this.newUserToChannel[group.groupId][channel.channelId] = '';
-          // Initialize channel members if not already defined
-          if (!channel.members) {
-            channel.members = [];
-          }
         });
       });
     });
   }
-
+  
+  
+  
   addGroup(): void {
     const trimmedGroupName = this.newGroupName.trim();
-
+  
     if (!trimmedGroupName) {
       alert("Group name cannot be empty!");
       return;
     }
-
-    this.httpClient.post(BACKEND_URL + 'create-group', { groupName: trimmedGroupName }, httpOptions)
+  
+    this.httpClient.post<Group>(BACKEND_URL + 'create-group', { groupName: trimmedGroupName }, httpOptions)
       .subscribe({
-        next: (newGroup: any) => {
+        next: (newGroup: Group) => {
           this.groups.push(newGroup);
           this.newUserToChannel[newGroup.groupId] = {}; // Initialize the channels for the new group
           this.newGroupName = ''; // Clear the input field
@@ -83,7 +95,7 @@ export class GroupsComponent implements OnInit {
         }
       });
   }
-
+  
   removeGroup(groupId: string): void {
     const group = this.groups.find(g => g.groupId === groupId);
     if (group && confirm(`Are you sure you want to remove the group "${group.groupName}"?`)) {
@@ -99,15 +111,15 @@ export class GroupsComponent implements OnInit {
 
   addChannel(groupId: string): void {
     const trimmedChannelName = this.newChannelName[groupId]?.trim();
-
+  
     if (!trimmedChannelName) {
       alert("Channel name cannot be empty!");
       return;
     }
-
-    this.httpClient.post(BACKEND_URL + 'create-channel', { groupId, channelName: trimmedChannelName }, httpOptions)
+  
+    this.httpClient.post<Channel>(BACKEND_URL + 'create-channel', { groupId, channelName: trimmedChannelName }, httpOptions)
       .subscribe({
-        next: (newChannel: any) => {
+        next: (newChannel: Channel) => {
           const group = this.groups.find(g => g.groupId === groupId);
           if (group) {
             group.channels.push(newChannel);
@@ -124,7 +136,7 @@ export class GroupsComponent implements OnInit {
         }
       });
   }
-
+  
   removeChannel(groupId: string, channelId: string): void {
     const group = this.groups.find(g => g.groupId === groupId);
     const channel = group?.channels.find((c: Channel) => c.channelId === channelId);
@@ -142,84 +154,87 @@ export class GroupsComponent implements OnInit {
   }
 
   addUserToGroup(groupId: string): void {
-    const trimmedUsername = this.newUserId[groupId]?.trim();  // Assuming `newUserId` now holds the username
+    const trimmedUsername = this.newUserId[groupId]?.trim();
 
     if (!trimmedUsername) {
-      alert("Username cannot be empty!");
-      return;
+        alert("Username cannot be empty!");
+        return;
     }
 
     this.httpClient.post(BACKEND_URL + 'add-user-to-group', { groupId, username: trimmedUsername }, httpOptions)
+        .subscribe({
+            next: () => {
+                const group = this.groups.find(g => g.groupId === groupId);
+                if (group) {
+                    group.members.push({ _id: "temp", username: trimmedUsername }); // Include a temporary _id
+                }
+                this.newUserId[groupId] = ''; // Clear the input field
+            },
+            error: (err) => {
+                if (err.status === 400 && err.error.error === "User does not exist") {
+                    alert("User does not exist!");
+                } else if (err.status === 400 && err.error.error === "User already in group") {
+                    alert("User is already a member of this group!");
+                } else {
+                    alert("An error occurred while adding the user to the group.");
+                }
+            }
+        });
+}
+
+
+removeUserFromGroup(groupId: string, username: string): void {
+  console.log("Group ID sent:", groupId);  // Make sure it’s a valid ObjectId
+  console.log("Group ID before sending:", groupId);
+  console.log("Username:", username);
+  if (confirm(`Are you sure you want to remove ${username} from this group?`)) {
+    this.httpClient.post(BACKEND_URL + 'remove-user-from-group', { groupId, username }, httpOptions)
       .subscribe({
-        next: (response: any) => {
+        next: () => {
           const group = this.groups.find(g => g.groupId === groupId);
           if (group) {
-            group.members.push(trimmedUsername);
+            group.members = group.members.filter((member) => member.username !== username);
           }
-          this.newUserId[groupId] = ''; // Clear the input field
         },
         error: (err) => {
-          if (err.status === 400 && err.error.error === "User does not exist") {
-            alert("User does not exist!");
-          } else if (err.status === 400 && err.error.error === "User already in group") {
-            alert("User is already a member of this group!");
-          } else {
-            alert("An error occurred while adding the user to the group.");
-          }
+          alert(err.error.error || "An error occurred while removing the user from the group.");
         }
       });
   }
+}
 
-  removeUserFromGroup(groupId: string, username: string): void {
-    if (confirm(`Are you sure you want to remove ${username} from this group?`)) {
-      this.httpClient.post(BACKEND_URL + 'remove-user-from-group', { groupId, username }, httpOptions)
-        .subscribe({
-          next: () => {
-            const group = this.groups.find(g => g.groupId === groupId);
-            if (group) {
-              group.members = group.members.filter((member: string) => member !== username);
-            }
-          },
-          error: (err) => {
-            alert(err.error.error || "An error occurred while removing the user from the group.");
-          }
-        });
-    }
-  }
+
+
 
   addUserToChannel(groupId: string, channelId: string): void {
-    // Initialize the nested object if it doesn't exist
     if (!this.newUserToChannel[groupId]) {
-      this.newUserToChannel[groupId] = {};
-    }
-
-    if (!this.newUserToChannel[groupId][channelId]) {
-      this.newUserToChannel[groupId][channelId] = '';
+        this.newUserToChannel[groupId] = {};
     }
 
     const username = this.newUserToChannel[groupId][channelId]?.trim();
     if (!username) {
-      alert("Username cannot be empty!");
-      return;
+        alert("Username cannot be empty!");
+        return;
     }
 
     this.httpClient.post(BACKEND_URL + 'add-user-to-channel', { groupId, channelId, username }, httpOptions)
-      .subscribe({
-        next: (response: any) => {
-          const group = this.groups.find(g => g.groupId === groupId);
-          if (group) {
-            const channel = group.channels.find((c: Channel) => c.channelId === channelId);
-            if (channel && channel.members) {
-              channel.members.push(username);
+        .subscribe({
+            next: () => {
+                const group = this.groups.find(g => g.groupId === groupId);
+                if (group) {
+                    const channel = group.channels.find((c: Channel) => c.channelId === channelId);
+                    if (channel && channel.members) {
+                        channel.members.push({ _id: "temp", username }); // Include a temporary _id
+                    }
+                }
+                this.newUserToChannel[groupId][channelId] = ''; // Clear the input field
+            },
+            error: (err) => {
+                alert(err.error.error || "An error occurred while adding the user to the channel.");
             }
-          }
-          this.newUserToChannel[groupId][channelId] = ''; // Clear the input field
-        },
-        error: (err) => {
-          alert(err.error.error || "An error occurred while adding the user to the channel.");
-        }
-      });
-  }
+        });
+}
+
 
   removeUserFromChannel(groupId: string, channelId: string, username: string): void {
     if (confirm(`Are you sure you want to remove ${username} from this channel?`)) {
@@ -230,7 +245,7 @@ export class GroupsComponent implements OnInit {
             if (group) {
               const channel = group.channels.find((c: Channel) => c.channelId === channelId);
               if (channel && channel.members) {
-                channel.members = channel.members.filter((member: string) => member !== username);
+                channel.members = channel.members.filter((member) => member.username !== username);
               }
             }
           },
@@ -240,5 +255,4 @@ export class GroupsComponent implements OnInit {
         });
     }
   }
-
 }
