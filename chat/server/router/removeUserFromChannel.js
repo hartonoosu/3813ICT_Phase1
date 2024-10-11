@@ -1,36 +1,48 @@
-const fs = require('fs');
-const path = require('path');
+import Group from '../models/Group.js';
+import User from '../models/User.js';
 
-// File paths
-const groupsFilePath = path.join(__dirname, '../data/groups.json');
+export default async function(req, res) {
+    try {
+        const { groupId, channelId, username } = req.body;
 
-module.exports = (req, res) => {
-    const { groupId, channelId, username } = req.body;
+        // Validate request data
+        if (!groupId || !channelId || !username) {
+            console.error("Group ID, Channel ID, or Username is missing in the request");
+            return res.status(400).send({ error: "Group ID, Channel ID, and Username are required" });
+        }
 
-    // Read existing groups and channels from groups.json
-    const groups = JSON.parse(fs.readFileSync(groupsFilePath, 'utf-8'));
+        // Find the group in the database
+        const group = await Group.findById(groupId);
+        if (!group) {
+            return res.status(404).send({ error: "Group not found" });
+        }
 
-    // Find the group
-    const group = groups.find(g => g.groupId === groupId);
-    if (!group) {
-        return res.status(404).send({ error: "Group not found" });
+        // Find the channel within the group
+        const channel = group.channels.find(c => c.channelId === channelId);
+        if (!channel) {
+            return res.status(404).send({ error: "Channel not found" });
+        }
+
+        // Find the user in the database
+        const user = await User.findOne({ username: { $regex: new RegExp(`^${username}$`, 'i') } });
+        if (!user) {
+            return res.status(400).send({ error: "User does not exist" });
+        }
+
+        // Check if the user exists in the channel
+        if (!channel.members || !channel.members.includes(user._id)) {
+            return res.status(404).send({ error: "User not found in channel" });
+        }
+
+        // Remove user from channel's members list
+        channel.members = channel.members.filter(member => !member.equals(user._id));
+
+        // Save the updated group
+        await group.save();
+
+        res.status(200).send({ message: "User removed from channel successfully" });
+    } catch (err) {
+        console.error("An error occurred:", err);
+        res.status(500).send({ error: "Internal server error" });
     }
-
-    // Find the channel within the group
-    const channel = group.channels.find(c => c.channelId === channelId);
-    if (!channel) {
-        return res.status(404).send({ error: "Channel not found" });
-    }
-
-    // Check if the user exists in the channel
-    if (!channel.members || !channel.members.includes(username)) {
-        return res.status(404).send({ error: "User not found in channel" });
-    }
-
-    // Remove user from channel's members list
-    channel.members = channel.members.filter(member => member !== username);
-
-    // Write the updated groups back to the file
-    fs.writeFileSync(groupsFilePath, JSON.stringify(groups, null, 2), 'utf-8');
-    res.status(200).send({ message: "User removed from channel successfully" });
-};
+}

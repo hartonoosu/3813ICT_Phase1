@@ -13,25 +13,39 @@ import { RouterLink } from '@angular/router';
 })
 export class NavbarComponent {
   get isLoggedIn(): boolean {
-    return !!sessionStorage.getItem('userrole');
+    if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
+      return !!sessionStorage.getItem('userrole');
+    }
+    return false; // Return false if sessionStorage is not available
   }
 
   get isAdmin(): boolean {
-    return sessionStorage.getItem('userrole') === 'admin';
+    if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
+      return sessionStorage.getItem('userrole') === 'admin';
+    }
+    return false;
   }
 
   get isGroupAdmin(): boolean {
-    return sessionStorage.getItem('userrole') === 'groupadmin';
+    if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
+      return sessionStorage.getItem('userrole') === 'groupadmin';
+    }
+    return false;
   }
 
   get isUser(): boolean {
-    return sessionStorage.getItem('userrole') === 'user';
+    if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
+      return sessionStorage.getItem('userrole') === 'user';
+    }
+    return false;
   }
 
   constructor(private router: Router) {}
 
   logout() {
-    sessionStorage.clear(); // Clear all session storage data on logout
+    if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
+      sessionStorage.clear(); // Clear all session storage data on logout
+    }
     this.router.navigate(['/login']);
   }
 }

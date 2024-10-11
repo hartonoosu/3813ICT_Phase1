@@ -1,77 +1,81 @@
-const fs = require("fs");
-const path = require("path");
+import Group from '../models/Group.js';
 
-module.exports = function(req, res) {
-    const groupsFilePath = path.join(__dirname, "../data/groups.json");
-
+export default async function(req, res) {
+  try {
+    // Create Channel
     if (req.method === "POST" && req.url === "/create-channel") {
-        // Handle channel creation
-        fs.readFile(groupsFilePath, "utf-8", function(err, data) {
-            if (err) throw err;
+      const { groupId, channelName } = req.body;
 
-            let groups = JSON.parse(data);
-            const { groupId, channelName } = req.body;
-            const trimmedChannelName = channelName.trim().toLowerCase();
+      // Validate request data
+      if (!groupId || !channelName) {
+        console.error("Group ID or Channel name is missing in the request");
+        return res.status(400).send({ error: "Group ID and Channel name are required" });
+      }
 
-            // Find the group by ID
-            const group = groups.find(g => g.groupId === groupId);
+      const trimmedChannelName = channelName.trim().toLowerCase();
 
-            if (!group) {
-                return res.status(404).send({ error: "Group not found" });
-            }
+      // Find the group by ID
+      const group = await Group.findById(groupId);
 
-            // Check if the channel name already exists in the group
-            if (group.channels.some(channel => channel.channelName.toLowerCase() === trimmedChannelName)) {
-                return res.status(400).send({ error: "Channel name already exists in this group" });
-            }
+      if (!group) {
+        return res.status(404).send({ error: "Group not found" });
+      }
 
-            // Create a new channel
-            const newChannel = {
-                channelId: Date.now().toString(),  // Unique ID based on timestamp
-                channelName: trimmedChannelName
-            };
+      // Check if the channel name already exists in the group
+      if (group.channels.some(channel => channel.channelName.toLowerCase() === trimmedChannelName)) {
+        return res.status(400).send({ error: "Channel name already exists in this group" });
+      }
 
-            // Add the new channel to the group
-            group.channels.push(newChannel);
+      // Create a new channel
+      const newChannel = {
+        channelId: Date.now().toString(),  // Unique ID based on timestamp
+        channelName: trimmedChannelName
+      };
 
-            // Write the updated groups back to the file
-            fs.writeFile(groupsFilePath, JSON.stringify(groups, null, 2), "utf-8", function(err) {
-                if (err) throw err;
-                res.send(newChannel);  // Send the newly created channel as a response
-            });
-        });
+      // Add the new channel to the group
+      group.channels.push(newChannel);
+
+      // Save the updated group
+      await group.save();
+
+      res.send(newChannel);  // Send the newly created channel as a response
+
+    // Delete Channel
     } else if (req.method === "DELETE" && req.url === "/delete-channel") {
-        // Handle channel deletion
-        fs.readFile(groupsFilePath, "utf-8", function(err, data) {
-            if (err) throw err;
+      const { groupId, channelId } = req.body;
 
-            let groups = JSON.parse(data);
-            const { groupId, channelId } = req.body;
+      // Validate request data
+      if (!groupId || !channelId) {
+        console.error("Group ID or Channel ID is missing in the request");
+        return res.status(400).send({ error: "Group ID and Channel ID are required" });
+      }
 
-            // Find the group by ID
-            const group = groups.find(g => g.groupId === groupId);
+      // Find the group by ID
+      const group = await Group.findById(groupId);
 
-            if (!group) {
-                return res.status(404).send({ error: "Group not found" });
-            }
+      if (!group) {
+        return res.status(404).send({ error: "Group not found" });
+      }
 
-            // Filter out the channel with the specified ID
-            const updatedChannels = group.channels.filter(c => c.channelId !== channelId);
+      // Filter out the channel with the specified ID
+      const updatedChannels = group.channels.filter(c => c.channelId !== channelId);
 
-            if (updatedChannels.length === group.channels.length) {
-                return res.status(404).send({ error: "Channel not found" });
-            }
+      if (updatedChannels.length === group.channels.length) {
+        return res.status(404).send({ error: "Channel not found" });
+      }
 
-            // Update the channels in the group
-            group.channels = updatedChannels;
+      // Update the channels in the group
+      group.channels = updatedChannels;
 
-            // Write the updated groups back to the file
-            fs.writeFile(groupsFilePath, JSON.stringify(groups, null, 2), "utf-8", function(err) {
-                if (err) throw err;
-                res.send({ message: "Channel deleted successfully" });
-            });
-        });
+      // Save the updated group
+      await group.save();
+
+      res.send({ message: "Channel deleted successfully" });
     } else {
-        res.status(405).send({ error: "Method not allowed" });
+      res.status(405).send({ error: "Method not allowed" });
     }
-};
+  } catch (err) {
+    console.error("An error occurred:", err);
+    res.status(500).send({ error: "Internal server error" });
+  }
+}

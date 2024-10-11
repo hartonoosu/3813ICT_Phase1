@@ -1,13 +1,12 @@
-const fs = require("fs");
-const path = require("path");
+import Group from '../models/Group.js';
 
-module.exports = function(req, res) {
-    const groupsFilePath = path.join(__dirname, "../data/groups.json");
-
-    fs.readFile(groupsFilePath, "utf-8", function(err, data) {
-        if (err) throw err;
-
-        let groups = JSON.parse(data);
+export default async function(req, res) {
+    try {
+        // Find all groups in the database
+        const groups = await Group.find();
         res.send(groups);  // Send all groups and channels as the response
-    });
-};
+    } catch (err) {
+        console.error("An error occurred:", err);
+        res.status(500).send({ error: "Internal server error" });
+    }
+}

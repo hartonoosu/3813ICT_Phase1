@@ -1,60 +1,60 @@
-const fs = require("fs");
-const path = require("path");
+import Group from '../models/Group.js';
 
-module.exports = function(req, res) {
-    const groupsFilePath = path.join(__dirname, "../data/groups.json");
-
+export default async function(req, res) {
+  try {
+    // Create Group
     if (req.method === "POST" && req.url === "/create-group") {
-        // Handle group creation
-        fs.readFile(groupsFilePath, "utf-8", function(err, data) {
-            if (err) throw err;
+      const { groupName } = req.body;
 
-            let groups = JSON.parse(data);
-            const newGroupName = req.body.groupName.trim();
+      // Validate request data
+      if (!groupName) {
+        console.error("Group name is missing in the request");
+        return res.status(400).send({ error: "Group name is required" });
+      }
 
-            // Check if the group name already exists
-            const groupExists = groups.some(group => group.groupName.toLowerCase() === newGroupName.toLowerCase());
+      const newGroupName = groupName.trim();
 
-            if (groupExists) {
-                return res.status(400).send({ error: "Group name already exists" });
-            }
+      // Check if the group name already exists
+      const groupExists = await Group.findOne({ groupName: { $regex: new RegExp(`^${newGroupName}$`, 'i') } });
 
-            const newGroup = {
-                groupId: Date.now().toString(),  // Unique ID based on timestamp
-                groupName: newGroupName,
-                channels: [],
-                members: []
-            };
+      if (groupExists) {
+        return res.status(400).send({ error: "Group name already exists" });
+      }
 
-            groups.push(newGroup);
+      // Create new group
+      const newGroup = new Group({
+        groupName: newGroupName,
+        channels: [],
+        members: []
+      });
 
-            fs.writeFile(groupsFilePath, JSON.stringify(groups, null, 2), "utf-8", function(err) {
-                if (err) throw err;
-                res.send(newGroup);  // Send the newly created group as a response
-            });
-        });
+      await newGroup.save();
+
+      res.send(newGroup);  // Send the newly created group as a response
+
+    // Delete Group
     } else if (req.method === "DELETE" && req.url === "/delete-group") {
-        // Handle group deletion
-        fs.readFile(groupsFilePath, "utf-8", function(err, data) {
-            if (err) throw err;
+      const { groupId } = req.body;
 
-            let groups = JSON.parse(data);
-            const groupIdToDelete = req.body.groupId;
+      // Validate request data
+      if (!groupId) {
+        console.error("Group ID is missing in the request");
+        return res.status(400).send({ error: "Group ID is required" });
+      }
 
-            // Filter out the group with the specified ID
-            const updatedGroups = groups.filter(g => g.groupId !== groupIdToDelete);
+      // Find and delete the group
+      const deletedGroup = await Group.findByIdAndDelete(groupId);
 
-            if (updatedGroups.length === groups.length) {
-                return res.status(404).send({ error: "Group not found" });
-            }
+      if (!deletedGroup) {
+        return res.status(404).send({ error: "Group not found" });
+      }
 
-            // Write the updated list back to the file
-            fs.writeFile(groupsFilePath, JSON.stringify(updatedGroups, null, 2), "utf-8", function(err) {
-                if (err) throw err;
-                res.send({ message: "Group deleted successfully" });
-            });
-        });
+      res.send({ message: "Group deleted successfully" });
     } else {
-        res.status(405).send({ error: "Method not allowed" });
+      res.status(405).send({ error: "Method not allowed" });
     }
-};
+  } catch (err) {
+    console.error("An error occurred:", err);
+    res.status(500).send({ error: "Internal server error" });
+  }
+}
