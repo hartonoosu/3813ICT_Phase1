@@ -1,35 +1,50 @@
 <div class="container text-white mt-5 p-4 rounded">
     <h1>Accounts Page</h1>
-    <img src="../assets/public/rollercoaster.jpg" alt="Account Image" class="img-fluid mb-3">
-    <div *ngIf="userData; else loading">
-        <h2>Account Details</h2>
-        <table class="table table-striped table-dark">
-            <tbody>
-                <tr>
-                    <th>User ID</th>
-                    <td>{{ userData.userid }}</td>
-                </tr>
-                <tr>
-                    <th>Username</th>
-                    <td>{{ userData.username }}</td>
-                </tr>
-                <tr>
-                    <th>Useremail</th>
-                    <td>{{ userData.useremail }}</td>
-                </tr>
-                <tr>
-                    <th>Group</th>
-                    <td>{{ userData.usergroup }}</td>
-                </tr>
-                <tr>
-                    <th>Role</th>
-                    <td>{{ userData.userrole }}</td>
-                </tr>
-            </tbody>
-        </table>
+  
+    <!-- Avatar upload -->
+    <div>
+      <label for="avatar">Upload Avatar:</label>
+      <input type="file" (change)="onFileSelected($event)">
+      <button (click)="uploadAvatar()">Upload Avatar</button>
+      <p>{{ uploadMessage }}</p> 
     </div>
+  
+    <!-- Display avatar -->
+    <div *ngIf="userData.avatar">
+      <img [src]="backendUrl + userData.avatar" alt="User Avatar" class="img-thumbnail" width="150">
+    </div>
+  
+    <!-- User details -->
+    <div *ngIf="userData; else loading">
+      <h2>Account Details</h2>
+      <table class="table table-striped table-dark">
+        <tbody>
+          <tr>
+            <th>User ID</th>
+            <td>{{ userData.userid }}</td>
+          </tr>
+          <tr>
+            <th>Username</th>
+            <td>{{ userData.username }}</td>
+          </tr>
+          <tr>
+            <th>Email</th>
+            <td>{{ userData.useremail }}</td>
+          </tr>
+          <tr>
+            <th>Group</th>
+            <td>{{ userData.usergroup }}</td>
+          </tr>
+          <tr>
+            <th>Role</th>
+            <td>{{ userData.userrole }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  
     <ng-template #loading>
-        <p class="text-center">Loading user data...</p>
+      <p class="text-center">Loading user data...</p>
     </ng-template>
-</div>
+  </div>
   
