@@ -213,6 +213,9 @@ export class GroupsComponent implements OnInit {
         return;
     }
 
+    // Add the console log here to check the payload
+    console.log("Adding user to channel, payload:", { groupId, channelId, username });
+
     this.httpClient.post(BACKEND_URL + 'add-user-to-channel', { groupId, channelId, username }, httpOptions)
         .subscribe({
             next: () => {
@@ -229,7 +232,8 @@ export class GroupsComponent implements OnInit {
                 alert(err.error.error || "An error occurred while adding the user to the channel.");
             }
         });
-  }
+}
+
 
   removeUserFromChannel(groupId: string, channelId: string, username: string): void {
     if (confirm(`Are you sure you want to remove ${username} from this channel?`)) {

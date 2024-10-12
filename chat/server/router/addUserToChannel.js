@@ -28,7 +28,8 @@ export default async (req, res) => {
         }
 
         // Find the channel within the group
-        const channel = group.channels.find(c => c.channelId === channelId);
+        // Make sure to use _id instead of channelId to match MongoDB's ObjectId
+        const channel = group.channels.find(c => c._id.toString() === channelId);
         if (!channel) {
             return res.status(404).send({ error: "Channel not found" });
         }
