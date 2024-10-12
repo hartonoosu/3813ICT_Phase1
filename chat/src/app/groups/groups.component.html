@@ -16,7 +16,7 @@
       <!-- Group name and remove button -->
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h5 class="mb-0">{{ group.groupName }}</h5>
-        <button class="btn btn-danger btn-sm" (click)="removeGroup(group.groupId)">Remove Group</button>
+        <button class="btn btn-danger btn-sm" (click)="removeGroup(group._id)">Remove Group</button>
       </div>
 
       <!-- List of channels within the group -->
@@ -26,13 +26,13 @@
           <div>
             <div class="d-flex justify-content-between align-items-center">
               <span>{{ channel.channelName }}</span>
-              <button class="btn btn-danger btn-sm" (click)="removeChannel(group.groupId, channel.channelId)">Remove Channel</button>
+              <button class="btn btn-danger btn-sm" (click)="removeChannel(group._id, channel._id)">Remove Channel</button>
             </div>
             <!-- Members of the channel -->
             <ul class="mt-2">
               <li *ngFor="let member of channel.members" class="d-flex justify-content-between align-items-center">
                   <span class="text-white">- {{ member.username }}</span> <!-- Display populated username -->
-                  <button class="btn btn-danger btn-sm" (click)="removeUserFromChannel(group.groupId, channel.channelId, member._id)">Remove</button>
+                  <button class="btn btn-danger btn-sm" (click)="removeUserFromChannel(group._id, channel._id, member._id)">Remove</button>
               </li>
           </ul>
           </div>
@@ -40,19 +40,19 @@
       </ul>
 
       <!-- Form to add a new channel to the group -->
-      <form (ngSubmit)="addChannel(group.groupId)" class="mb-4">
+      <form (ngSubmit)="addChannel(group._id)" class="mb-4">
         <div class="form-group">
-          <label for="newChannelName-{{group.groupId}}">New Channel Name:</label>
-          <input type="text" class="form-control" id="newChannelName-{{group.groupId}}" name="newChannelName-{{group.groupId}}" [(ngModel)]="newChannelName[group.groupId]" placeholder="Enter channel name" required>
+          <label for="newChannelName-{{group._id}}">New Channel Name:</label>
+          <input type="text" class="form-control" id="newChannelName-{{group._id}}" name="newChannelName-{{group._id}}" [(ngModel)]="newChannelName[group._id]" placeholder="Enter channel name" required>
         </div>
         <button type="submit" class="btn btn-primary btn-sm mt-2">Add Channel</button>
       </form>
 
       <!-- Form to add a new user to the group -->
-      <form (ngSubmit)="addUserToGroup(group.groupId)" class="mb-4">
+      <form (ngSubmit)="addUserToGroup(group._id)" class="mb-4">
         <div class="form-group">
-          <label for="newUserId-{{group.groupId}}">Add User to Group by Username:</label>
-          <input type="text" class="form-control" id="newUserId-{{group.groupId}}" name="newUserId" [(ngModel)]="newUserId[group.groupId]" placeholder="Enter username" required>
+          <label for="newUserId-{{group._id}}">Add User to Group by Username:</label>
+          <input type="text" class="form-control" id="newUserId-{{group._id}}" name="newUserId" [(ngModel)]="newUserId[group._id]" placeholder="Enter username" required>
         </div>
         <button type="submit" class="btn btn-primary btn-sm mt-2">Add User</button>
       </form>
@@ -63,17 +63,17 @@
       <ul class="list-group mb-3">
           <li *ngFor="let member of group.members" class="list-group-item bg-secondary d-flex justify-content-between align-items-center text-white mb-2">
               {{ member.username }} <!-- Display populated username -->
-              <button class="btn btn-danger btn-sm" (click)="removeUserFromGroup(group.groupId, member._id)">Remove</button>
+              <button class="btn btn-danger btn-sm" (click)="removeUserFromGroup(group._id, member._id)">Remove</button>
           </li>
       </ul>
 
 
       <!-- Form to add a new user to the channel -->
       <div *ngFor="let channel of group.channels" class="mb-4">
-        <form (ngSubmit)="addUserToChannel(group.groupId, channel.channelId)">
+        <form (ngSubmit)="addUserToChannel(group._id, channel._id)">
           <div class="form-group">
-            <label for="newUserToChannel-{{group.groupId}}-{{channel.channelId}}">Add User to Channel "{{channel.channelName}}" by Username:</label>
-            <input type="text" class="form-control" id="newUserToChannel-{{group.groupId}}-{{channel.channelId}}" name="newUserToChannel-{{group.groupId}}-{{channel.channelId}}" [(ngModel)]="newUserToChannel[group.groupId][channel.channelId]" placeholder="Enter username" required>
+            <label for="newUserToChannel-{{group._id}}-{{channel._id}}">Add User to Channel "{{channel.channelName}}" by Username:</label>
+            <input type="text" class="form-control" id="newUserToChannel-{{group._id}}-{{channel._id}}" name="newUserToChannel-{{group._id}}-{{channel._id}}" [(ngModel)]="newUserToChannel[group._id][channel._id]" placeholder="Enter username" required>
           </div>
           <button type="submit" class="btn btn-primary btn-sm mt-2">Add User to Channel</button>
         </form>

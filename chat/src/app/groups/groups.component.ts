@@ -16,19 +16,17 @@ interface Member {
 }
 
 interface Channel {
-  channelId: string;
+  _id: string; // MongoDB ObjectId
   channelName: string;
-  members?: { _id: string; username: string }[]; // Include _id for reference
+  members?: Member[]; // Include _id for reference
 }
 
 interface Group {
-  groupId: string;
+  _id: string; // MongoDB ObjectId
   groupName: string;
-  members: { _id: string; username: string }[]; // Include _id for reference
+  members: Member[]; // Include _id for reference
   channels: Channel[];
 }
-
-
 
 @Component({
   selector: 'app-groups',
@@ -61,15 +59,13 @@ export class GroupsComponent implements OnInit {
   
       // Initialize newUserToChannel for each group and channel
       this.groups.forEach((group: Group) => {
-        this.newUserToChannel[group.groupId] = {};
+        this.newUserToChannel[group._id] = {};
         group.channels.forEach((channel: Channel) => {
-          this.newUserToChannel[group.groupId][channel.channelId] = '';
+          this.newUserToChannel[group._id][channel._id] = '';
         });
       });
     });
   }
-  
-  
   
   addGroup(): void {
     const trimmedGroupName = this.newGroupName.trim();
@@ -83,7 +79,7 @@ export class GroupsComponent implements OnInit {
       .subscribe({
         next: (newGroup: Group) => {
           this.groups.push(newGroup);
-          this.newUserToChannel[newGroup.groupId] = {}; // Initialize the channels for the new group
+          this.newUserToChannel[newGroup._id] = {}; // Initialize the channels for the new group
           this.newGroupName = ''; // Clear the input field
         },
         error: (err) => {
@@ -97,13 +93,13 @@ export class GroupsComponent implements OnInit {
   }
   
   removeGroup(groupId: string): void {
-    const group = this.groups.find(g => g.groupId === groupId);
+    const group = this.groups.find(g => g._id === groupId);
     if (group && confirm(`Are you sure you want to remove the group "${group.groupName}"?`)) {
       this.httpClient.delete(BACKEND_URL + 'delete-group', {
         headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
         body: { groupId }
       }).subscribe(() => {
-        this.groups = this.groups.filter(g => g.groupId !== groupId);
+        this.groups = this.groups.filter(g => g._id !== groupId);
         delete this.newUserToChannel[groupId]; // Remove the associated channels
       });
     }
@@ -120,10 +116,10 @@ export class GroupsComponent implements OnInit {
     this.httpClient.post<Channel>(BACKEND_URL + 'create-channel', { groupId, channelName: trimmedChannelName }, httpOptions)
       .subscribe({
         next: (newChannel: Channel) => {
-          const group = this.groups.find(g => g.groupId === groupId);
+          const group = this.groups.find(g => g._id === groupId);
           if (group) {
             group.channels.push(newChannel);
-            this.newUserToChannel[groupId][newChannel.channelId] = ''; // Initialize the new channel in newUserToChannel
+            this.newUserToChannel[groupId][newChannel._id] = ''; // Initialize the new channel in newUserToChannel
           }
           this.newChannelName[groupId] = ''; // Clear the input field for this group
         },
@@ -138,15 +134,15 @@ export class GroupsComponent implements OnInit {
   }
   
   removeChannel(groupId: string, channelId: string): void {
-    const group = this.groups.find(g => g.groupId === groupId);
-    const channel = group?.channels.find((c: Channel) => c.channelId === channelId);
+    const group = this.groups.find(g => g._id === groupId);
+    const channel = group?.channels.find((c: Channel) => c._id === channelId);
     if (channel && confirm(`Are you sure you want to remove the channel "${channel.channelName}"?`)) {
       this.httpClient.delete(BACKEND_URL + 'delete-channel', {
         headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
         body: { groupId, channelId }
       }).subscribe(() => {
         if (group) {
-          group.channels = group.channels.filter((c: Channel) => c.channelId !== channelId);
+          group.channels = group.channels.filter((c: Channel) => c._id !== channelId);
           delete this.newUserToChannel[groupId][channelId]; // Remove the channel from newUserToChannel
         }
       });
@@ -164,7 +160,7 @@ export class GroupsComponent implements OnInit {
     this.httpClient.post(BACKEND_URL + 'add-user-to-group', { groupId, username: trimmedUsername }, httpOptions)
         .subscribe({
             next: () => {
-                const group = this.groups.find(g => g.groupId === groupId);
+                const group = this.groups.find(g => g._id === groupId);
                 if (group) {
                     group.members.push({ _id: "temp", username: trimmedUsername }); // Include a temporary _id
                 }
@@ -180,31 +176,31 @@ export class GroupsComponent implements OnInit {
                 }
             }
         });
-}
-
-
-removeUserFromGroup(groupId: string, username: string): void {
-  console.log("Group ID sent:", groupId);  // Make sure it’s a valid ObjectId
-  console.log("Group ID before sending:", groupId);
-  console.log("Username:", username);
-  if (confirm(`Are you sure you want to remove ${username} from this group?`)) {
-    this.httpClient.post(BACKEND_URL + 'remove-user-from-group', { groupId, username }, httpOptions)
-      .subscribe({
-        next: () => {
-          const group = this.groups.find(g => g.groupId === groupId);
-          if (group) {
-            group.members = group.members.filter((member) => member.username !== username);
-          }
-        },
-        error: (err) => {
-          alert(err.error.error || "An error occurred while removing the user from the group.");
-        }
-      });
   }
-}
 
-
-
+  removeUserFromGroup(groupId: string, userId: string): void {
+    const group = this.groups.find(g => g._id === groupId);
+    if (group) {
+      const user = group.members.find((member) => member._id === userId);
+      if (!user) {
+        alert("User not found");
+        return;
+      }
+  
+      const username = user.username;  // Use the username for the backend query
+      console.log("Removing user from group, payload:", { groupId, username });
+      this.httpClient.post(BACKEND_URL + 'remove-user-from-group', { groupId, username }, httpOptions)
+        .subscribe({
+          next: () => {
+            group.members = group.members.filter((member) => member._id !== userId);
+          },
+          error: (err) => {
+            alert(err.error.error || "An error occurred while removing the user from the group.");
+          }
+        });
+    }
+  }
+  
 
   addUserToChannel(groupId: string, channelId: string): void {
     if (!this.newUserToChannel[groupId]) {
@@ -220,9 +216,9 @@ removeUserFromGroup(groupId: string, username: string): void {
     this.httpClient.post(BACKEND_URL + 'add-user-to-channel', { groupId, channelId, username }, httpOptions)
         .subscribe({
             next: () => {
-                const group = this.groups.find(g => g.groupId === groupId);
+                const group = this.groups.find(g => g._id === groupId);
                 if (group) {
-                    const channel = group.channels.find((c: Channel) => c.channelId === channelId);
+                    const channel = group.channels.find((c: Channel) => c._id === channelId);
                     if (channel && channel.members) {
                         channel.members.push({ _id: "temp", username }); // Include a temporary _id
                     }
@@ -233,17 +229,16 @@ removeUserFromGroup(groupId: string, username: string): void {
                 alert(err.error.error || "An error occurred while adding the user to the channel.");
             }
         });
-}
-
+  }
 
   removeUserFromChannel(groupId: string, channelId: string, username: string): void {
     if (confirm(`Are you sure you want to remove ${username} from this channel?`)) {
       this.httpClient.post(BACKEND_URL + 'remove-user-from-channel', { groupId, channelId, username }, httpOptions)
         .subscribe({
           next: () => {
-            const group = this.groups.find(g => g.groupId === groupId);
+            const group = this.groups.find(g => g._id === groupId);
             if (group) {
-              const channel = group.channels.find((c: Channel) => c.channelId === channelId);
+              const channel = group.channels.find((c: Channel) => c._id === channelId);
               if (channel && channel.members) {
                 channel.members = channel.members.filter((member) => member.username !== username);
               }

@@ -8,10 +8,10 @@ const channelSchema = new Schema({
 });
 
 const groupSchema = new Schema({
-  groupId: { type: String, required: true },
   groupName: { type: String, required: true },
   channels: [channelSchema],
   members: [{ type: Schema.Types.ObjectId, ref: 'User' }]
 });
+
 
 export default model('Group', groupSchema);
