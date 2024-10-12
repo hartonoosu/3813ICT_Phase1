@@ -29,26 +29,26 @@ export default async function (req, res) {
             return res.status(404).send({ error: "Group not found" });
         }
 
+        // Find the user by username
         const user = await User.findOne({ username: { $regex: new RegExp(`^${username}$`, 'i') } });
         if (!user) {
             console.error("User does not exist");
             return res.status(400).send({ error: "User does not exist" });
         }
 
-        const userIndex = group.members.findIndex(id => id.toString() === user._id.toString());
-        if (userIndex === -1) {
-            console.error("User not found in group");
-            return res.status(404).send({ error: "User not found in group" });
+        // Check if the user is already in the group
+        const userAlreadyInGroup = group.members.some(memberId => memberId.toString() === user._id.toString());
+        if (userAlreadyInGroup) {
+            return res.status(400).send({ error: "User is already a member of this group" });
         }
-        
-        // Remove the user from the members array
-        group.members.splice(userIndex, 1);
-        
+
+        // Add the user to the members array
+        group.members.push(user._id);
+
         // Save the updated group document
         await group.save();
-        
 
-        res.send({ message: "User removed from group successfully" });
+        res.send({ message: "User added to the group successfully" });
     } catch (err) {
         console.error("An error occurred during operation:", err);
         res.status(500).send({ error: "Internal server error" });

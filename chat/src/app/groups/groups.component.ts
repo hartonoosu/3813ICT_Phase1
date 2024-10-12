@@ -54,18 +54,20 @@ export class GroupsComponent implements OnInit {
   }
 
   getGroups(): void {
-    this.httpClient.get<Group[]>(BACKEND_URL + 'get-groups-and-channels', httpOptions).subscribe((data: Group[]) => {
-      this.groups = data;
+    this.httpClient.get<Group[]>(BACKEND_URL + 'get-groups-and-channels', httpOptions)
+      .subscribe((data: Group[]) => {
+        this.groups = data;
   
-      // Initialize newUserToChannel for each group and channel
-      this.groups.forEach((group: Group) => {
-        this.newUserToChannel[group._id] = {};
-        group.channels.forEach((channel: Channel) => {
-          this.newUserToChannel[group._id][channel._id] = '';
+        // Initialize newUserToChannel for each group and channel
+        this.groups.forEach((group: Group) => {
+          this.newUserToChannel[group._id] = {};
+          group.channels.forEach((channel: Channel) => {
+            this.newUserToChannel[group._id][channel._id] = '';
+          });
         });
       });
-    });
   }
+  
   
   addGroup(): void {
     const trimmedGroupName = this.newGroupName.trim();
@@ -132,51 +134,53 @@ export class GroupsComponent implements OnInit {
         }
       });
   }
-  
   removeChannel(groupId: string, channelId: string): void {
-    const group = this.groups.find(g => g._id === groupId);
-    const channel = group?.channels.find((c: Channel) => c._id === channelId);
-    if (channel && confirm(`Are you sure you want to remove the channel "${channel.channelName}"?`)) {
-      this.httpClient.delete(BACKEND_URL + 'delete-channel', {
-        headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
-        body: { groupId, channelId }
-      }).subscribe(() => {
-        if (group) {
-          group.channels = group.channels.filter((c: Channel) => c._id !== channelId);
-          delete this.newUserToChannel[groupId][channelId]; // Remove the channel from newUserToChannel
+    // Use the _id field instead of channelId
+    console.log("Deleting channel, payload:", { groupId, channelId });
+  
+    this.httpClient.delete(BACKEND_URL + `delete-channel?groupId=${groupId}&channelId=${channelId}`, httpOptions)
+      .subscribe({
+        next: () => {
+          console.log("Channel deleted successfully");
+          // Refresh group and channel data after deletion
+          this.getGroups();
+        },
+        error: (err) => {
+          console.error("Error deleting channel:", err);
+          alert(err.error.error || "An error occurred while deleting the channel.");
         }
       });
-    }
   }
+  
+  
+  
 
   addUserToGroup(groupId: string): void {
     const trimmedUsername = this.newUserId[groupId]?.trim();
-
+  
     if (!trimmedUsername) {
-        alert("Username cannot be empty!");
-        return;
+      alert("Username cannot be empty!");
+      return;
     }
-
+  
     this.httpClient.post(BACKEND_URL + 'add-user-to-group', { groupId, username: trimmedUsername }, httpOptions)
-        .subscribe({
-            next: () => {
-                const group = this.groups.find(g => g._id === groupId);
-                if (group) {
-                    group.members.push({ _id: "temp", username: trimmedUsername }); // Include a temporary _id
-                }
-                this.newUserId[groupId] = ''; // Clear the input field
-            },
-            error: (err) => {
-                if (err.status === 400 && err.error.error === "User does not exist") {
-                    alert("User does not exist!");
-                } else if (err.status === 400 && err.error.error === "User already in group") {
-                    alert("User is already a member of this group!");
-                } else {
-                    alert("An error occurred while adding the user to the group.");
-                }
-            }
-        });
+      .subscribe({
+        next: () => {
+          // Instead of relying on manual state manipulation, just reload the page
+          window.location.reload(); // This will refresh the page to reflect the changes
+        },
+        error: (err) => {
+          if (err.status === 400 && err.error.error === "User does not exist") {
+            alert("User does not exist!");
+          } else if (err.status === 400 && err.error.error === "User already in group") {
+            alert("User is already a member of this group!");
+          } else {
+            alert("An error occurred while adding the user to the group.");
+          }
+        }
+      });
   }
+  
 
   removeUserFromGroup(groupId: string, userId: string): void {
     const group = this.groups.find(g => g._id === groupId);
@@ -204,35 +208,31 @@ export class GroupsComponent implements OnInit {
 
   addUserToChannel(groupId: string, channelId: string): void {
     if (!this.newUserToChannel[groupId]) {
-        this.newUserToChannel[groupId] = {};
+      this.newUserToChannel[groupId] = {};
     }
-
+  
     const username = this.newUserToChannel[groupId][channelId]?.trim();
     if (!username) {
-        alert("Username cannot be empty!");
-        return;
+      alert("Username cannot be empty!");
+      return;
     }
-
+  
     // Add the console log here to check the payload
     console.log("Adding user to channel, payload:", { groupId, channelId, username });
-
+  
     this.httpClient.post(BACKEND_URL + 'add-user-to-channel', { groupId, channelId, username }, httpOptions)
-        .subscribe({
-            next: () => {
-                const group = this.groups.find(g => g._id === groupId);
-                if (group) {
-                    const channel = group.channels.find((c: Channel) => c._id === channelId);
-                    if (channel && channel.members) {
-                        channel.members.push({ _id: "temp", username }); // Include a temporary _id
-                    }
-                }
-                this.newUserToChannel[groupId][channelId] = ''; // Clear the input field
-            },
-            error: (err) => {
-                alert(err.error.error || "An error occurred while adding the user to the channel.");
-            }
-        });
-}
+      .subscribe({
+        next: () => {
+          // Instead of relying on manual state manipulation, refresh the group data
+          this.getGroups(); // Fetch the latest group data from the server
+          this.newUserToChannel[groupId][channelId] = ''; // Clear the input field
+        },
+        error: (err) => {
+          alert(err.error.error || "An error occurred while adding the user to the channel.");
+        }
+      });
+  }
+  
 
 
   removeUserFromChannel(groupId: string, channelId: string, username: string): void {

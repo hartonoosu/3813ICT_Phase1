@@ -22,7 +22,7 @@ import getGroupsAndChannels from './router/getGroupsAndChannels.js';
 import manageGroups from './router/manageGroups.js';
 import manageChannels from './router/manageChannels.js';
 import manageUsers from './router/manageUsers.js';
-import addUserToChannel from './router/addUserToChannel.js';
+import addUserToChannel from './router/addUSerToChannel.js';
 import removeUserFromChannel from './router/removeUserFromChannel.js';
 
 // Route handlers
