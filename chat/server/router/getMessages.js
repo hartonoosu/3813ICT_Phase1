@@ -12,8 +12,16 @@ router.post('/get-messages', async (req, res) => {
       return res.status(400).json({ error: 'Channel ID is required' });
     }
 
-    const messages = await Message.find({ channelId }).sort({ timestamp: 1 });
-    res.status(200).json(messages);
+    // Fetch messages and convert to plain objects for easier manipulation
+    const messages = await Message.find({ channelId }).sort({ timestamp: 1 }).lean();
+
+    // Ensure avatarUrl is correctly formatted before sending
+    const messagesWithAvatarUrl = messages.map(message => ({
+      ...message,
+      avatarUrl: message.avatar ? `/uploads/avatars/${message.avatar}` : '' // Update this path as needed
+    }));
+
+    res.status(200).json(messagesWithAvatarUrl);
   } catch (err) {
     console.error('An error occurred while fetching messages:', err);
     res.status(500).send({ error: 'Internal server error' });

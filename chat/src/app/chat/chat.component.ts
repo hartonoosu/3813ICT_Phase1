@@ -19,11 +19,13 @@ const BACKEND_URL = 'http://localhost:3000'; // Backend URL for API calls
 export class ChatComponent implements OnInit {
   socket: any;
   currentMessage: string = '';
-  messages: string[] = [];
+  messages: { username: string; content: string; avatarUrl: string }[] = []; // Updated type
   username: string = sessionStorage.getItem('username') || 'Guest';
+  avatarUrl: string = sessionStorage.getItem('avatarUrl') ? `${BACKEND_URL}${sessionStorage.getItem('avatarUrl')}` : ''; // Using absolute URL
   channelId: string = ''; // Stores current channel
   groups: any[] = []; // Stores group names
   channels: any[] = []; // Stores channels for the selected group
+  selectedFile: File | null = null; // Stores the selected file for sending images
 
   constructor(
     private router: Router,
@@ -37,28 +39,40 @@ export class ChatComponent implements OnInit {
       return;
     }
 
+    // Debug session storage content
+    console.log('Session Storage Values:', {
+      username: sessionStorage.getItem('username'),
+      avatarUrl: sessionStorage.getItem('avatarUrl'),
+      userid: sessionStorage.getItem('userid')
+    });
+
     this.socket = io(SOCKET_URL, {
       reconnection: true, // Allows reconnecting if the initial attempt fails
       transports: ['websocket', 'polling'], // Ensure both polling and websocket transports are supported
     });
-    
+
     this.socket.on('connect', () => {
       console.log('Connected to Socket.IO server with id:', this.socket.id);
     });
 
     // Event listener for receiving messages
-    this.socket.on('receiveMessage', (message: string) => {
+    this.socket.on('receiveMessage', (message: any) => {
       this.zone.run(() => {
         console.log('Received message:', message);
-        this.messages.push(message);
+        this.messages.push({
+          username: message.username || 'Unknown',
+          content: message.content || '',
+          avatarUrl: message.avatarUrl ? `${BACKEND_URL}${message.avatarUrl}` : '' // Check if the avatar URL is not empty before setting
+        });
       });
     });
+
 
     // Event listener for users joining a channel
     this.socket.on('userJoined', (message: string) => {
       this.zone.run(() => {
         console.log('User joined message:', message);
-        this.messages.push(message);
+        this.messages.push({ username: 'System', content: message, avatarUrl: '' });
       });
     });
 
@@ -66,7 +80,11 @@ export class ChatComponent implements OnInit {
     this.socket.on('previousMessages', (messages: any[]) => {
       this.zone.run(() => {
         console.log('Previous messages:', messages);
-        this.messages = messages.map(m => `${m.username}: ${m.content}`);
+        this.messages = messages.map(m => ({
+          username: m.username || 'Unknown',
+          content: m.content || '',
+          avatarUrl: m.avatarUrl ? `${BACKEND_URL}${m.avatarUrl}` : '' // Append backend URL if not empty
+        }));
       });
     });
 
@@ -97,7 +115,6 @@ export class ChatComponent implements OnInit {
           
           // Automatically select the first channel if it's available
           if (this.channels.length > 0) {
-            // Assuming the first channel should be selected by default
             const defaultChannelId = this.channels[0].channelId;
             this.joinChannelById(defaultChannelId);
           }
@@ -119,30 +136,29 @@ export class ChatComponent implements OnInit {
 
   joinChannelById(channelIdParam: string): void {
     if (channelIdParam) {
-      // Find the selected channel by channelId
       const selectedChannel = this.channels.find(channel => channel.channelId === channelIdParam);
   
       if (selectedChannel) {
         if (this.channelId !== selectedChannel.channelId) {
-          // Leave the previous channel if any
           if (this.channelId) {
             this.socket.emit('leaveChannel', { channelId: this.channelId, username: this.username });
           }
   
-          // Set the new channel ID
           this.channelId = selectedChannel.channelId;
           this.messages = []; // Clear previous messages to avoid showing old data
   
           console.log('Joining new channel:', this.channelId); // Log the new channelId
   
-          // Join the new channel
           this.socket.emit('joinChannel', { channelId: this.channelId, username: this.username });
   
-          // Fetch previous messages for the newly selected channel
           this.httpClient.post<any>(BACKEND_URL + '/get-messages', { channelId: this.channelId }).subscribe({
             next: (data) => {
               this.zone.run(() => {
-                this.messages = data.map((m: any) => `${m.username}: ${m.content}`);
+                this.messages = data.map((m: any) => ({
+                  username: m.username || 'Unknown',
+                  content: m.content || '',
+                  avatarUrl: m.avatarUrl ? `${BACKEND_URL}${m.avatarUrl}` : '' // Using absolute URL for consistency
+                }));
                 console.log('Messages for new channel:', this.messages);
               });
             },
@@ -174,7 +190,8 @@ export class ChatComponent implements OnInit {
       this.socket.emit('sendMessage', {
         channelId: this.channelId,
         message: this.currentMessage,
-        username: this.username
+        username: this.username,
+        avatarUrl: this.avatarUrl
       });
 
       this.zone.run(() => {
@@ -184,4 +201,50 @@ export class ChatComponent implements OnInit {
       console.error('Cannot send an empty message.');
     }
   }
+
+  onFileSelected(event: any): void {
+    if (event.target.files.length > 0) {
+      this.selectedFile = event.target.files[0];
+    }
+  }
+  
+  sendImage(): void {
+    if (!this.channelId) {
+      console.error('Cannot send image: No channel selected');
+      alert('Please select a channel before sending an image.');
+      return;
+    }
+  
+    if (this.selectedFile) {
+      const formData = new FormData();
+      formData.append('channelId', this.channelId);
+      formData.append('username', this.username);
+      formData.append('avatarUrl', this.avatarUrl);
+      formData.append('image', this.selectedFile);
+  
+      this.httpClient.post<any>(`${BACKEND_URL}/send-image`, formData).subscribe({
+        next: (data) => {
+          console.log('Image sent successfully:', data);
+          this.socket.emit('sendImage', {
+            channelId: this.channelId,
+            username: this.username,
+            avatarUrl: this.avatarUrl,
+            imageUrl: data.imageUrl, // Use the full URL returned from the server
+          });
+          this.selectedFile = null; // Clear the selected file after upload
+        },
+        error: (error) => {
+          console.error('Failed to send image', error);
+        }
+      });
+    } else {
+      console.error('No image selected to send.');
+    }
+  }
+  
+  extractImageUrl(content: string): string {
+    const match = content.match(/src="([^"]*)"/);
+    return match ? match[1] : '';
+  }
+  
 }

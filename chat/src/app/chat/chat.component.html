@@ -17,21 +17,32 @@
       <option value="" disabled selected>Select a channel...</option>
       <option *ngFor="let channel of channels" [value]="channel.channelId">{{ channel.channelName }}</option>
     </select>
-      
   </div>
 
   <!-- Chat window -->
   <div class="chat-window p-3 mb-3" style="height: 300px; overflow-y: scroll; background-color: #f8f9fa; padding: 10px; border-radius: 5px;">
-    <div *ngFor="let message of messages">
-      <div style="color: #000;">{{ message }}</div>
+    <div *ngFor="let message of messages" class="message-item d-flex align-items-center mb-2">
+      <img *ngIf="message.avatarUrl" [src]="message.avatarUrl" alt="Avatar" class="avatar-img me-2" style="width: 30px; height: 30px; border-radius: 50%;">
+      <strong class="me-2 text-dark">{{ message.username }}:</strong>
+      
+      <!-- Display message content or image -->
+      <span class="text-dark" *ngIf="!message.content.startsWith('<img')">{{ message.content }}</span>
+      <img *ngIf="message.content.startsWith('<img')" [src]="extractImageUrl(message.content)" alt="Image message" style="max-width: 150px; max-height: 150px; border-radius: 5px;">
     </div>
   </div>
 
   <!-- Message input -->
   <form (ngSubmit)="sendMessage()">
-    <div class="form-group">
+    <div class="form-group mb-2">
       <input [(ngModel)]="currentMessage" type="text" class="form-control" name="currentMessage" placeholder="Type your message..." required>
     </div>
     <button type="submit" class="btn btn-primary w-100 mt-2">Send</button>
   </form>
+
+  <!-- Image upload input -->
+  <div class="image-upload mt-4">
+    <label for="imageInput" class="form-label">Upload an Image:</label>
+    <input type="file" id="imageInput" (change)="onFileSelected($event)" class="form-control mb-2">
+    <button (click)="sendImage()" class="btn btn-success w-100">Upload Image</button>
+  </div>
 </div>
