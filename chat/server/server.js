@@ -79,6 +79,7 @@ io.on('connection', (socket) => {
     rooms.forEach((room) => {
       if (room !== socket.id) {
         socket.leave(room);
+        io.to(room).emit('userLeft', `${username} has left the channel.`);
       }
     });
 
@@ -153,16 +154,20 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('setAvatar', async ({ userId, avatarUrl }) => {
-    // Update avatar URL in session or user data
-    // Here you would typically update the avatar URL in your database
-    io.to(socket.id).emit('avatarUpdated', avatarUrl);
+  socket.on('disconnecting', () => {
+    const rooms = Array.from(socket.rooms);
+    rooms.forEach((room) => {
+      if (room !== socket.id) {
+        io.to(room).emit('userLeft', `A user has left the channel.`);
+      }
+    });
   });
 
   socket.on('disconnect', () => {
     console.log('A user disconnected:', socket.id);
   });
 });
+
 
 // Start the server
 server.listen(PORT, () => {
