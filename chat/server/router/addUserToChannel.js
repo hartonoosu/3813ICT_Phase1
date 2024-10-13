@@ -1,54 +1,56 @@
-const fs = require('fs');
-const path = require('path');
+import User from '../models/User.js';
+import Group from '../models/Group.js';
 
-// File paths
-const groupsFilePath = path.join(__dirname, '../data/groups.json');
-const usersFilePath = path.join(__dirname, '../data/users.json');
+export default async (req, res) => {
+    try {
+        const { groupId, channelId, username } = req.body;
 
-module.exports = (req, res) => {
-    const { groupId, channelId, username } = req.body;
+        // Validate request data
+        if (!groupId || !channelId || !username) {
+            return res.status(400).send({ error: "Group ID, Channel ID, and Username are required" });
+        }
 
-    // Read existing users from users.json
-    const users = JSON.parse(fs.readFileSync(usersFilePath, 'utf-8'));
+        // Find the user in the database
+        const user = await User.findOne({ username: { $regex: new RegExp(`^${username}$`, 'i') } });
+        if (!user) {
+            return res.status(400).send({ error: "User does not exist" });
+        }
 
-    // Check if the user exists
-    const user = users.find(user => user.username.toLowerCase() === username.toLowerCase());
-    if (!user) {
-        return res.status(400).send({ error: "User does not exist" });
+        // Find the group in the database
+        const group = await Group.findById(groupId);
+        if (!group) {
+            return res.status(404).send({ error: "Group not found" });
+        }
+
+        // Check if the user is a member of the group
+        if (!group.members.includes(user._id)) {
+            return res.status(400).send({ error: "User is not a member of the group" });
+        }
+
+        // Find the channel within the group
+        // Make sure to use _id instead of channelId to match MongoDB's ObjectId
+        const channel = group.channels.find(c => c._id.toString() === channelId);
+        if (!channel) {
+            return res.status(404).send({ error: "Channel not found" });
+        }
+
+        // Check if the user is already added to the channel
+        if (channel.members && channel.members.includes(user._id)) {
+            return res.status(400).send({ error: "User already in channel" });
+        }
+
+        // Add user to channel's members list
+        if (!channel.members) {
+            channel.members = [];
+        }
+        channel.members.push(user._id);
+
+        // Save the updated group
+        await group.save();
+
+        res.status(200).send({ message: "User added to channel successfully" });
+    } catch (err) {
+        console.error("An error occurred:", err);
+        res.status(500).send({ error: "Internal server error" });
     }
-
-    // Read existing groups and channels from groups.json
-    const groups = JSON.parse(fs.readFileSync(groupsFilePath, 'utf-8'));
-
-    // Find the group
-    const group = groups.find(g => g.groupId === groupId);
-    if (!group) {
-        return res.status(404).send({ error: "Group not found" });
-    }
-
-    // Check if the user is a member of the group
-    if (!group.members.includes(username)) {
-        return res.status(400).send({ error: "User is not a member of the group" });
-    }
-
-    // Find the channel within the group
-    const channel = group.channels.find(c => c.channelId === channelId);
-    if (!channel) {
-        return res.status(404).send({ error: "Channel not found" });
-    }
-
-    // Check if the user is already added to the channel
-    if (channel.members && channel.members.includes(username)) {
-        return res.status(400).send({ error: "User already in channel" });
-    }
-
-    // Add user to channel's members list
-    if (!channel.members) {
-        channel.members = [];
-    }
-    channel.members.push(username);
-
-    // Write the updated groups back to the file
-    fs.writeFileSync(groupsFilePath, JSON.stringify(groups, null, 2), 'utf-8');
-    res.status(200).send({ message: "User added to channel successfully" });
 };

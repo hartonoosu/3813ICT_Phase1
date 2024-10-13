@@ -1,45 +1,39 @@
-const fs = require("fs");
-const path = require("path");
+import User from '../models/User.js';
 
-module.exports = function(req, res) {
-    // Create a user object based on the request body
-    let userobj = {
-        "userid": req.body.userid,
-        "pwd": req.body.pwd,  // Password right after userid
-        "username": req.body.username,
-        "useremail": req.body.useremail,
-        "usergroup": req.body.usergroup,
-        "userrole": req.body.userrole
-    };
+export default async function (req, res) {
+  try {
+    // Extract the user data from request body
+    const { userid, pwd, username, useremail, usergroup, userrole } = req.body;
 
-    // Path to the users data file
-    const usersFilePath = path.join(__dirname, "../data/users.json");
+    // Ensure the required fields are provided
+    if (!userid) {
+      return res.status(400).send({ message: 'User ID is required' });
+    }
 
-    // Initialize an array to hold the users data
-    let uArray = [];
+    // Log the user object for debugging
+    console.log("Received user data for update:", { userid, username, useremail, usergroup, userrole });
 
-    // Read the users.json file
-    fs.readFile(usersFilePath, "utf-8", function(err, data) {
-        if (err) throw err;
+    // Find the existing user by userid
+    let existingUser = await User.findOne({ userid });
 
-        // Parse the JSON data into an array
-        uArray = JSON.parse(data);
+    if (!existingUser) {
+      console.error("User not found for userid:", userid);
+      return res.status(404).send({ message: 'User not found' });
+    }
 
-        // Log the user object for debugging
-        console.log("test: ", userobj);
+    // Update user fields if they exist in the request
+    if (pwd) existingUser.pwd = pwd;
+    if (useremail) existingUser.useremail = useremail;
+    if (usergroup) existingUser.usergroup = usergroup;
+    if (userrole) existingUser.userrole = userrole;
 
-        // Find the index of the existing user by username
-        let i = uArray.findIndex(x => x.username == userobj.username);
+    // Save the updated user
+    await existingUser.save();
 
-        // Send the updated user data back as the response
-        res.send(userobj);
-
-        // Convert the updated users array back to JSON
-        let uArrayJson = JSON.stringify(uArray, null, 2); // The `null, 2` adds indentation for readability
-
-        // Write the updated users array back to users.json
-        fs.writeFile(usersFilePath, uArrayJson, "utf-8", function(err) {
-            if (err) throw err;
-        });
-    });
-};
+    // Send the updated user data back as the response
+    res.status(200).send(existingUser);
+  } catch (err) {
+    console.error("An error occurred while updating user data:", err);
+    res.status(500).send({ error: "Internal server error" });
+  }
+}

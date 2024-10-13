@@ -10,10 +10,22 @@ const httpOptions = {
 }
 const BACKEND_URL = 'http://localhost:3000/';
 
+interface Member {
+  _id: string; // MongoDB ObjectId
+  username: string; // Populated username field
+}
+
 interface Channel {
-  channelId: string;
+  _id: string; // MongoDB ObjectId
   channelName: string;
-  members?: string[]; // Add this to ensure members are recognized
+  members?: Member[]; // Include _id for reference
+}
+
+interface Group {
+  _id: string; // MongoDB ObjectId
+  groupName: string;
+  members: Member[]; // Include _id for reference
+  channels: Channel[];
 }
 
 @Component({
@@ -24,11 +36,11 @@ interface Channel {
   styleUrls: ['./groups.component.css']
 })
 export class GroupsComponent implements OnInit {
-  groups: any[] = [];
+  groups: Group[] = [];
   newGroupName: string = '';
-  newChannelName: { [key: string]: string } = {}; // Initialize as an object
-  newUserId: { [key: string]: string } = {}; // Store user IDs by group
-  newUserToChannel: { [key: string]: { [key: string]: string } } = {}; // Initialize as an object of objects
+  newChannelName: { [key: string]: string } = {}; // Store new channel names by group ID
+  newUserId: { [key: string]: string } = {}; // Store user IDs (actually usernames) by group ID
+  newUserToChannel: { [key: string]: { [key: string]: string } } = {}; // Store user assignments by group ID and channel ID
 
   constructor(private router: Router, private httpClient: HttpClient) { }
 
@@ -42,36 +54,34 @@ export class GroupsComponent implements OnInit {
   }
 
   getGroups(): void {
-    this.httpClient.get(BACKEND_URL + 'get-groups-and-channels', httpOptions).subscribe((data: any) => {
-      this.groups = data;
-
-      // Initialize newUserToChannel for each group and channel
-      this.groups.forEach(group => {
-        this.newUserToChannel[group.groupId] = {};
-        group.channels.forEach((channel: Channel) => {
-          this.newUserToChannel[group.groupId][channel.channelId] = '';
-          // Initialize channel members if not already defined
-          if (!channel.members) {
-            channel.members = [];
-          }
+    this.httpClient.get<Group[]>(BACKEND_URL + 'get-groups-and-channels', httpOptions)
+      .subscribe((data: Group[]) => {
+        this.groups = data;
+  
+        // Initialize newUserToChannel for each group and channel
+        this.groups.forEach((group: Group) => {
+          this.newUserToChannel[group._id] = {};
+          group.channels.forEach((channel: Channel) => {
+            this.newUserToChannel[group._id][channel._id] = '';
+          });
         });
       });
-    });
   }
-
+  
+  
   addGroup(): void {
     const trimmedGroupName = this.newGroupName.trim();
-
+  
     if (!trimmedGroupName) {
       alert("Group name cannot be empty!");
       return;
     }
-
-    this.httpClient.post(BACKEND_URL + 'create-group', { groupName: trimmedGroupName }, httpOptions)
+  
+    this.httpClient.post<Group>(BACKEND_URL + 'create-group', { groupName: trimmedGroupName }, httpOptions)
       .subscribe({
-        next: (newGroup: any) => {
+        next: (newGroup: Group) => {
           this.groups.push(newGroup);
-          this.newUserToChannel[newGroup.groupId] = {}; // Initialize the channels for the new group
+          this.newUserToChannel[newGroup._id] = {}; // Initialize the channels for the new group
           this.newGroupName = ''; // Clear the input field
         },
         error: (err) => {
@@ -83,15 +93,15 @@ export class GroupsComponent implements OnInit {
         }
       });
   }
-
+  
   removeGroup(groupId: string): void {
-    const group = this.groups.find(g => g.groupId === groupId);
+    const group = this.groups.find(g => g._id === groupId);
     if (group && confirm(`Are you sure you want to remove the group "${group.groupName}"?`)) {
       this.httpClient.delete(BACKEND_URL + 'delete-group', {
         headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
         body: { groupId }
       }).subscribe(() => {
-        this.groups = this.groups.filter(g => g.groupId !== groupId);
+        this.groups = this.groups.filter(g => g._id !== groupId);
         delete this.newUserToChannel[groupId]; // Remove the associated channels
       });
     }
@@ -99,19 +109,19 @@ export class GroupsComponent implements OnInit {
 
   addChannel(groupId: string): void {
     const trimmedChannelName = this.newChannelName[groupId]?.trim();
-
+  
     if (!trimmedChannelName) {
       alert("Channel name cannot be empty!");
       return;
     }
-
-    this.httpClient.post(BACKEND_URL + 'create-channel', { groupId, channelName: trimmedChannelName }, httpOptions)
+  
+    this.httpClient.post<Channel>(BACKEND_URL + 'create-channel', { groupId, channelName: trimmedChannelName }, httpOptions)
       .subscribe({
-        next: (newChannel: any) => {
-          const group = this.groups.find(g => g.groupId === groupId);
+        next: (newChannel: Channel) => {
+          const group = this.groups.find(g => g._id === groupId);
           if (group) {
             group.channels.push(newChannel);
-            this.newUserToChannel[groupId][newChannel.channelId] = ''; // Initialize the new channel in newUserToChannel
+            this.newUserToChannel[groupId][newChannel._id] = ''; // Initialize the new channel in newUserToChannel
           }
           this.newChannelName[groupId] = ''; // Clear the input field for this group
         },
@@ -124,39 +134,40 @@ export class GroupsComponent implements OnInit {
         }
       });
   }
-
   removeChannel(groupId: string, channelId: string): void {
-    const group = this.groups.find(g => g.groupId === groupId);
-    const channel = group?.channels.find((c: Channel) => c.channelId === channelId);
-    if (channel && confirm(`Are you sure you want to remove the channel "${channel.channelName}"?`)) {
-      this.httpClient.delete(BACKEND_URL + 'delete-channel', {
-        headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
-        body: { groupId, channelId }
-      }).subscribe(() => {
-        if (group) {
-          group.channels = group.channels.filter((c: Channel) => c.channelId !== channelId);
-          delete this.newUserToChannel[groupId][channelId]; // Remove the channel from newUserToChannel
+    // Use the _id field instead of channelId
+    console.log("Deleting channel, payload:", { groupId, channelId });
+  
+    this.httpClient.delete(BACKEND_URL + `delete-channel?groupId=${groupId}&channelId=${channelId}`, httpOptions)
+      .subscribe({
+        next: () => {
+          console.log("Channel deleted successfully");
+          // Refresh group and channel data after deletion
+          this.getGroups();
+        },
+        error: (err) => {
+          console.error("Error deleting channel:", err);
+          alert(err.error.error || "An error occurred while deleting the channel.");
         }
       });
-    }
   }
+  
+  
+  
 
   addUserToGroup(groupId: string): void {
-    const trimmedUsername = this.newUserId[groupId]?.trim();  // Assuming `newUserId` now holds the username
-
+    const trimmedUsername = this.newUserId[groupId]?.trim();
+  
     if (!trimmedUsername) {
       alert("Username cannot be empty!");
       return;
     }
-
+  
     this.httpClient.post(BACKEND_URL + 'add-user-to-group', { groupId, username: trimmedUsername }, httpOptions)
       .subscribe({
-        next: (response: any) => {
-          const group = this.groups.find(g => g.groupId === groupId);
-          if (group) {
-            group.members.push(trimmedUsername);
-          }
-          this.newUserId[groupId] = ''; // Clear the input field
+        next: () => {
+          // Instead of relying on manual state manipulation, just reload the page
+          window.location.reload(); // This will refresh the page to reflect the changes
         },
         error: (err) => {
           if (err.status === 400 && err.error.error === "User does not exist") {
@@ -169,16 +180,23 @@ export class GroupsComponent implements OnInit {
         }
       });
   }
+  
 
-  removeUserFromGroup(groupId: string, username: string): void {
-    if (confirm(`Are you sure you want to remove ${username} from this group?`)) {
+  removeUserFromGroup(groupId: string, userId: string): void {
+    const group = this.groups.find(g => g._id === groupId);
+    if (group) {
+      const user = group.members.find((member) => member._id === userId);
+      if (!user) {
+        alert("User not found");
+        return;
+      }
+  
+      const username = user.username;  // Use the username for the backend query
+      console.log("Removing user from group, payload:", { groupId, username });
       this.httpClient.post(BACKEND_URL + 'remove-user-from-group', { groupId, username }, httpOptions)
         .subscribe({
           next: () => {
-            const group = this.groups.find(g => g.groupId === groupId);
-            if (group) {
-              group.members = group.members.filter((member: string) => member !== username);
-            }
+            group.members = group.members.filter((member) => member._id !== userId);
           },
           error: (err) => {
             alert(err.error.error || "An error occurred while removing the user from the group.");
@@ -186,33 +204,27 @@ export class GroupsComponent implements OnInit {
         });
     }
   }
+  
 
   addUserToChannel(groupId: string, channelId: string): void {
-    // Initialize the nested object if it doesn't exist
     if (!this.newUserToChannel[groupId]) {
       this.newUserToChannel[groupId] = {};
     }
-
-    if (!this.newUserToChannel[groupId][channelId]) {
-      this.newUserToChannel[groupId][channelId] = '';
-    }
-
+  
     const username = this.newUserToChannel[groupId][channelId]?.trim();
     if (!username) {
       alert("Username cannot be empty!");
       return;
     }
-
+  
+    // Add the console log here to check the payload
+    console.log("Adding user to channel, payload:", { groupId, channelId, username });
+  
     this.httpClient.post(BACKEND_URL + 'add-user-to-channel', { groupId, channelId, username }, httpOptions)
       .subscribe({
-        next: (response: any) => {
-          const group = this.groups.find(g => g.groupId === groupId);
-          if (group) {
-            const channel = group.channels.find((c: Channel) => c.channelId === channelId);
-            if (channel && channel.members) {
-              channel.members.push(username);
-            }
-          }
+        next: () => {
+          // Instead of relying on manual state manipulation, refresh the group data
+          this.getGroups(); // Fetch the latest group data from the server
           this.newUserToChannel[groupId][channelId] = ''; // Clear the input field
         },
         error: (err) => {
@@ -220,17 +232,19 @@ export class GroupsComponent implements OnInit {
         }
       });
   }
+  
+
 
   removeUserFromChannel(groupId: string, channelId: string, username: string): void {
     if (confirm(`Are you sure you want to remove ${username} from this channel?`)) {
       this.httpClient.post(BACKEND_URL + 'remove-user-from-channel', { groupId, channelId, username }, httpOptions)
         .subscribe({
           next: () => {
-            const group = this.groups.find(g => g.groupId === groupId);
+            const group = this.groups.find(g => g._id === groupId);
             if (group) {
-              const channel = group.channels.find((c: Channel) => c.channelId === channelId);
+              const channel = group.channels.find((c: Channel) => c._id === channelId);
               if (channel && channel.members) {
-                channel.members = channel.members.filter((member: string) => member !== username);
+                channel.members = channel.members.filter((member) => member.username !== username);
               }
             }
           },
@@ -240,5 +254,4 @@ export class GroupsComponent implements OnInit {
         });
     }
   }
-
 }
