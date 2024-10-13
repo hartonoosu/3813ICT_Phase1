@@ -38,23 +38,23 @@ export class ChatComponent implements OnInit {
       this.router.navigate(['/login']);
       return;
     }
-
+  
     // Debug session storage content
     console.log('Session Storage Values:', {
       username: sessionStorage.getItem('username'),
       avatarUrl: sessionStorage.getItem('avatarUrl'),
       userid: sessionStorage.getItem('userid')
     });
-
+  
     this.socket = io(SOCKET_URL, {
-      reconnection: true, // Allows reconnecting if the initial attempt fails
-      transports: ['websocket', 'polling'], // Ensure both polling and websocket transports are supported
+      reconnection: true,
+      transports: ['websocket', 'polling'],
     });
-
+  
     this.socket.on('connect', () => {
       console.log('Connected to Socket.IO server with id:', this.socket.id);
     });
-
+  
     // Event listener for receiving messages
     this.socket.on('receiveMessage', (message: any) => {
       this.zone.run(() => {
@@ -62,12 +62,11 @@ export class ChatComponent implements OnInit {
         this.messages.push({
           username: message.username || 'Unknown',
           content: message.content || '',
-          avatarUrl: message.avatarUrl ? `${BACKEND_URL}${message.avatarUrl}` : '' // Check if the avatar URL is not empty before setting
+          avatarUrl: message.avatarUrl ? `${BACKEND_URL}${message.avatarUrl}` : ''
         });
       });
     });
-
-
+  
     // Event listener for users joining a channel
     this.socket.on('userJoined', (message: string) => {
       this.zone.run(() => {
@@ -75,7 +74,15 @@ export class ChatComponent implements OnInit {
         this.messages.push({ username: 'System', content: message, avatarUrl: '' });
       });
     });
-
+  
+    // Event listener for users leaving a channel
+    this.socket.on('userLeft', (message: string) => {
+      this.zone.run(() => {
+        console.log('User left message:', message);
+        this.messages.push({ username: 'System', content: message, avatarUrl: '' });
+      });
+    });
+  
     // Listen for previous messages when joining a channel
     this.socket.on('previousMessages', (messages: any[]) => {
       this.zone.run(() => {
@@ -83,13 +90,14 @@ export class ChatComponent implements OnInit {
         this.messages = messages.map(m => ({
           username: m.username || 'Unknown',
           content: m.content || '',
-          avatarUrl: m.avatarUrl ? `${BACKEND_URL}${m.avatarUrl}` : '' // Append backend URL if not empty
+          avatarUrl: m.avatarUrl ? `${BACKEND_URL}${m.avatarUrl}` : ''
         }));
       });
     });
-
+  
     this.loadGroupsAndChannels();
   }
+  
 
   loadGroupsAndChannels(): void {
     this.httpClient.get<any>(BACKEND_URL + '/get-groups-and-channels').subscribe({

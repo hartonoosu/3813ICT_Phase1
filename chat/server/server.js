@@ -153,6 +153,12 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('setAvatar', async ({ userId, avatarUrl }) => {
+    // Update avatar URL in session or user data
+    // Here you would typically update the avatar URL in your database
+    io.to(socket.id).emit('avatarUpdated', avatarUrl);
+  });
+
   socket.on('disconnect', () => {
     console.log('A user disconnected:', socket.id);
   });
