@@ -1,9 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 
-// File paths
+// File path to users.json and groups.json
 const usersFilePath = path.join(__dirname, '../data/users.json');
-const extendedUsersFilePath = path.join(__dirname, '../data/extendedUsers.json');
+const groupsFilePath = path.join(__dirname, '../data/groups.json');
 
 // Helper function to read JSON file
 const readJsonFile = (filePath) => {
@@ -49,8 +49,9 @@ const generateUniqueId = (length = 5) => {
 module.exports = (req, res) => {
   const { username, useremail = '', usergroup = 'default', userrole = 'user' } = req.body;
 
-  // Read existing users from users.json
+  // Read existing users and groups from their respective files
   const users = readJsonFile(usersFilePath);
+  const groups = readJsonFile(groupsFilePath);
 
   // Check if username already exists
   const existingUser = users.find(user => user.username === username);
@@ -58,10 +59,20 @@ module.exports = (req, res) => {
     return res.status(409).json({ message: 'Username already exists' });
   }
 
+  // Check if the group exists
+  const existingGroup = groups.find(group => group.groupName === usergroup);
+  if (!existingGroup) {
+    return res.status(400).json({ message: 'Group does not exist' });
+  }
+
   // Generate new user data
   const newUser = {
+    userid: generateUniqueId(),  // Generate a unique 5-character ID
     username: username,
-    pwd: generateRandomPassword()  // Generate a random password
+    pwd: generateRandomPassword(),  // Generate a random password
+    useremail: useremail,
+    usergroup: usergroup,
+    userrole: userrole
   };
 
   // Add the new user to the users array
@@ -69,23 +80,6 @@ module.exports = (req, res) => {
 
   // Write updated users array back to users.json
   writeJsonFile(usersFilePath, users);
-
-  // Also add extended user profile data to extendedUsers.json
-  const extendedUsers = readJsonFile(extendedUsersFilePath);
-  console.log('Extended users before adding:', extendedUsers);
-
-  const newExtendedUser = {
-    userid: generateUniqueId(),  // Generate a unique 5-character ID
-    username: username,
-    useremail: useremail,
-    usergroup: usergroup,
-    userrole: userrole
-  };
-
-  extendedUsers.push(newExtendedUser);
-  console.log('Extended users after adding:', extendedUsers);
-
-  writeJsonFile(extendedUsersFilePath, extendedUsers);
 
   // Respond to the client
   res.status(201).json({

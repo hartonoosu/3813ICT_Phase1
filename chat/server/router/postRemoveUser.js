@@ -1,9 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
-// File paths
+// File path to users.json
 const usersFilePath = path.join(__dirname, '../data/users.json');
-const extendedUsersFilePath = path.join(__dirname, '../data/extendedUsers.json');
 
 // Helper function to read JSON file
 const readJsonFile = (filePath) => {
@@ -20,6 +19,7 @@ const readJsonFile = (filePath) => {
 const writeJsonFile = (filePath, data) => {
   try {
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+    console.log(`Data successfully written to ${filePath}`);
   } catch (err) {
     console.error(`Error writing file to disk: ${err}`);
   }
@@ -32,21 +32,17 @@ module.exports = (req, res) => {
   let users = readJsonFile(usersFilePath);
   const initialLength = users.length;
 
-  // Remove user with the specified username
-  users = users.filter(user => user.username !== username);
-
-  // If no user was removed, return 404
-  if (users.length === initialLength) {
+  // Check if the username exists
+  const userExists = users.find(user => user.username === username);
+  if (!userExists) {
     return res.status(404).json({ message: 'User not found' });
   }
 
+  // Remove user with the specified username
+  users = users.filter(user => user.username !== username);
+
   // Write the updated users array back to users.json
   writeJsonFile(usersFilePath, users);
-
-  // Also remove the extended user profile data from extendeduser.json
-  let extendedUsers = readJsonFile(extendedUsersFilePath);
-  extendedUsers = extendedUsers.filter(user => user.username !== username);
-  writeJsonFile(extendedUsersFilePath, extendedUsers);
 
   // Respond to the client
   res.status(200).json({ message: 'User removed successfully' });

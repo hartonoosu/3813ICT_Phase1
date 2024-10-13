@@ -1,0 +1,59 @@
+[
+  {
+    "groupId": "2",
+    "groupName": "Admin Group",
+    "channels": [
+      {
+        "channelId": "1726549545918",
+        "channelName": "introduction",
+        "members": [
+          "super",
+          "groupadmin"
+        ]
+      }
+    ],
+    "members": [
+      "super",
+      "groupadmin"
+    ]
+  },
+  {
+    "groupId": "10",
+    "groupName": "User Group",
+    "channels": [
+      {
+        "channelId": "201",
+        "channelName": "Support"
+      },
+      {
+        "channelId": "202",
+        "channelName": "Discussion"
+      }
+    ],
+    "members": [
+      "48445a2f-b729-42a5-ad82-aab047b12060",
+      "c3ffb885-262a-4d82-82af-fe8efffcdea0"
+    ]
+  },
+  {
+    "groupId": "1726542387244",
+    "groupName": "ABC Group",
+    "channels": [
+      {
+        "channelId": "1726542392390",
+        "channelName": "introduction",
+        "members": [
+          "super"
+        ]
+      },
+      {
+        "channelId": "1726546447469",
+        "channelName": "rules"
+      }
+    ],
+    "members": [
+      "super",
+      "groupadmin"
+    ]
+  }
+]

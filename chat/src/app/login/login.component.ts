@@ -15,7 +15,7 @@ const BACKEND_URL = 'http://localhost:3000/';
   standalone: true,
   imports: [FormsModule, NgIf, JsonPipe],
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css']  // Corrected from 'styleUrl' to 'styleUrls'
+  styleUrls: ['./login.component.css']
 })
 
 export class LoginComponent {
@@ -24,26 +24,31 @@ export class LoginComponent {
 
   constructor(private router: Router, private httpClient: HttpClient) {}
   
-  submit(){
-    let user = {username:this.username, pwd: this.password};
+  submit() {
+    const user = {
+      username: this.username,
+      pwd: this.password
+    };
+
     this.httpClient.post(BACKEND_URL + 'login', user, httpOptions)
-    //this.httpClient.post(BACKEND_URL+'login', user)
     .subscribe((data: any) => {
-      // alert("posting: " + JSON.stringify(user));
-      // alert("postRes: " + JSON.stringify(data));
       if (data.ok) {
-        // alert("correct!");
+        // Store user data in sessionStorage
         sessionStorage.setItem("userid", data.userid.toString());
         sessionStorage.setItem("userlogin", data.ok.toString());
         sessionStorage.setItem("username", data.username);
         sessionStorage.setItem("useremail", data.useremail);
         sessionStorage.setItem("usergroup", data.usergroup.toString());
         sessionStorage.setItem("userrole", data.userrole);
+        
+        // Navigate to account page
         this.router.navigateByUrl("/account");
-    } else {
-        alert("Email or password incorrect!");
-    }
-    
-  })
+      } else {
+        alert("Username or password incorrect!");
+      }
+    }, error => {
+      console.error('Login failed', error);
+      alert("An error occurred during login.");
+    });
   }
 }
