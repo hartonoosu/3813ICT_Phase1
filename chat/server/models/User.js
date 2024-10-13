@@ -33,6 +33,10 @@ const userSchema = new Schema({
   userrole: { 
     type: String, 
     default: 'user' // Default role is 'user'
+  },
+  avatar: {
+    type: String, 
+    default: '' // This field will store the path to the avatar image
   }
 });
 

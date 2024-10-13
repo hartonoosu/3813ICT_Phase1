@@ -1,15 +1,48 @@
 <div class="chat-container container text-white mt-5 p-4 rounded">
-    <h2 class="text-center mb-4">Chat Room</h2>
+  <h2 class="text-center mb-4">Chat Room: {{ channelId ? channelId : 'No Channel Selected' }}</h2>
 
-    <div class="chat-window p-3 mb-3">
-        <div class="message">
-        </div>
+  <!-- Group selection -->
+  <div class="mb-3">
+    <label for="groupSelect" class="form-label">Select Group:</label>
+    <select id="groupSelect" class="form-select" (change)="loadChannelsForGroup($event)">
+      <option value="" disabled selected>Select a group...</option>
+      <option *ngFor="let group of groups" [value]="group.groupName">{{ group.groupName }}</option>
+    </select>
+  </div>
+
+  <!-- Channel selection -->
+  <div class="mb-3" *ngIf="channels.length > 0">
+    <label for="channelSelect" class="form-label">Select Channel:</label>
+    <select id="channelSelect" class="form-select" (change)="joinChannel($event)">
+      <option value="" disabled selected>Select a channel...</option>
+      <option *ngFor="let channel of channels" [value]="channel.channelId">{{ channel.channelName }}</option>
+    </select>
+  </div>
+
+  <!-- Chat window -->
+  <div class="chat-window p-3 mb-3" style="height: 300px; overflow-y: scroll; background-color: #f8f9fa; padding: 10px; border-radius: 5px;">
+    <div *ngFor="let message of messages" class="message-item d-flex align-items-center mb-2">
+      <img *ngIf="message.avatarUrl" [src]="message.avatarUrl" alt="Avatar" class="avatar-img me-2" style="width: 30px; height: 30px; border-radius: 50%;">
+      <strong class="me-2 text-dark">{{ message.username }}:</strong>
+      
+      <!-- Display message content or image -->
+      <span class="text-dark" *ngIf="!message.content.startsWith('<img')">{{ message.content }}</span>
+      <img *ngIf="message.content.startsWith('<img')" [src]="extractImageUrl(message.content)" alt="Image message" style="max-width: 150px; max-height: 150px; border-radius: 5px;">
     </div>
+  </div>
 
-    <form (ngSubmit)="sendMessage()">
-        <div class="form-group">
-            <input type="text" class="form-control" name="currentMessage" placeholder="Type your message..." required>
-        </div>
-        <button type="submit" class="btn btn-primary w-100 mt-2">Send</button>
-    </form>
+  <!-- Message input -->
+  <form (ngSubmit)="sendMessage()">
+    <div class="form-group mb-2">
+      <input [(ngModel)]="currentMessage" type="text" class="form-control" name="currentMessage" placeholder="Type your message..." required>
+    </div>
+    <button type="submit" class="btn btn-primary w-100 mt-2">Send</button>
+  </form>
+
+  <!-- Image upload input -->
+  <div class="image-upload mt-4">
+    <label for="imageInput" class="form-label">Upload an Image:</label>
+    <input type="file" id="imageInput" (change)="onFileSelected($event)" class="form-control mb-2">
+    <button (click)="sendImage()" class="btn btn-success w-100">Upload Image</button>
+  </div>
 </div>
