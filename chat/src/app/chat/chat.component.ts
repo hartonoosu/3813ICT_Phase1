@@ -124,6 +124,8 @@ export class ChatComponent implements OnInit {
     const groupName = target.value;
 
     if (groupName) {
+      this.channelId = ''; // Clear current channel selection
+      this.channels = []; // Clear channels
       this.httpClient
         .post<any>(BACKEND_URL + '/get-channel', { groupName })
         .subscribe({
@@ -149,34 +151,35 @@ export class ChatComponent implements OnInit {
   joinChannel(event: Event): void {
     const target = event.target as HTMLSelectElement;
     const selectedChannelId = target.value;
+    console.log('Selected Channel ID:', selectedChannelId); // Add this line for debugging
     this.joinChannelById(selectedChannelId);
   }
-
+  
   joinChannelById(channelIdParam: string): void {
     if (channelIdParam) {
       const selectedChannel = this.channels.find(
-        (channel) => channel.channelId === channelIdParam
+        (channel) => channel._id === channelIdParam || channel._id === channelIdParam
       );
-
+  
       if (selectedChannel) {
-        if (this.channelId !== selectedChannel.channelId) {
+        if (this.channelId !== (selectedChannel.channelId || selectedChannel._id)) {
           if (this.channelId) {
             this.socketService.leaveChannel({
               channelId: this.channelId,
               username: this.username,
             });
           }
-
-          this.channelId = selectedChannel.channelId;
+  
+          this.channelId = selectedChannel.channelId || selectedChannel._id;
           this.messages = []; // Clear previous messages to avoid showing old data
-
+  
           console.log('Joining new channel:', this.channelId); // Log the new channelId
-
+  
           this.socketService.joinChannel({
             channelId: this.channelId,
             username: this.username,
           });
-
+  
           this.httpClient
             .post<any>(BACKEND_URL + '/get-messages', {
               channelId: this.channelId,
@@ -209,6 +212,7 @@ export class ChatComponent implements OnInit {
       console.error('No channel selected');
     }
   }
+  
 
   sendMessage(): void {
     if (!this.channelId) {
