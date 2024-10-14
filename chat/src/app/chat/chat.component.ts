@@ -4,9 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { NgIf } from '@angular/common';
 import { Router } from '@angular/router';
 import { NgFor } from '@angular/common';
-import { io } from 'socket.io-client';
+import { SocketService } from '../services/socket.service'; // Import SocketService
 
-const SOCKET_URL = 'http://localhost:3000'; // Your backend URL
 const BACKEND_URL = 'http://localhost:3000'; // Backend URL for API calls
 
 @Component({
@@ -17,7 +16,6 @@ const BACKEND_URL = 'http://localhost:3000'; // Backend URL for API calls
   styleUrls: ['./chat.component.css'],
 })
 export class ChatComponent implements OnInit {
-  socket: any;
   currentMessage: string = '';
   messages: { username: string; content: string; avatarUrl: string }[] = []; // Updated type
   username: string = sessionStorage.getItem('username') || 'Guest';
@@ -32,7 +30,8 @@ export class ChatComponent implements OnInit {
   constructor(
     private router: Router,
     private httpClient: HttpClient,
-    private zone: NgZone // Added NgZone for ensuring Angular runs in the correct zone
+    private zone: NgZone, // Added NgZone for ensuring Angular runs in the correct zone
+    private socketService: SocketService // Inject SocketService
   ) {}
 
   ngOnInit(): void {
@@ -48,31 +47,27 @@ export class ChatComponent implements OnInit {
       userid: sessionStorage.getItem('userid'),
     });
 
-    this.socket = io(SOCKET_URL, {
-      reconnection: true,
-      transports: ['websocket', 'polling'],
-    });
+    // Initialize Socket.IO
+    this.socketService.connect();
 
-    this.socket.on('connect', () => {
-      console.log('Connected to Socket.IO server with id:', this.socket.id);
+    this.socketService.onConnect(() => {
+      console.log('Connected to Socket.IO server');
     });
 
     // Event listener for receiving messages
-    this.socket.on('receiveMessage', (message: any) => {
+    this.socketService.onReceiveMessage((message: any) => {
       this.zone.run(() => {
         console.log('Received message:', message);
         this.messages.push({
           username: message.username || 'Unknown',
           content: message.content || '',
-          avatarUrl: message.avatarUrl
-            ? `${BACKEND_URL}${message.avatarUrl}`
-            : '',
+          avatarUrl: message.avatarUrl ? `${BACKEND_URL}${message.avatarUrl}` : '',
         });
       });
     });
 
     // Event listener for users joining a channel
-    this.socket.on('userJoined', (message: string) => {
+    this.socketService.onUserJoined((message: string) => {
       this.zone.run(() => {
         console.log('User joined message:', message);
         this.messages.push({
@@ -84,7 +79,7 @@ export class ChatComponent implements OnInit {
     });
 
     // Event listener for users leaving a channel
-    this.socket.on('userLeft', (message: string) => {
+    this.socketService.onUserLeft((message: string) => {
       this.zone.run(() => {
         console.log('User left message:', message);
         this.messages.push({
@@ -96,7 +91,7 @@ export class ChatComponent implements OnInit {
     });
 
     // Listen for previous messages when joining a channel
-    this.socket.on('previousMessages', (messages: any[]) => {
+    this.socketService.onPreviousMessages((messages: any[]) => {
       this.zone.run(() => {
         console.log('Previous messages:', messages);
         this.messages = messages.map((m) => ({
@@ -166,7 +161,7 @@ export class ChatComponent implements OnInit {
       if (selectedChannel) {
         if (this.channelId !== selectedChannel.channelId) {
           if (this.channelId) {
-            this.socket.emit('leaveChannel', {
+            this.socketService.leaveChannel({
               channelId: this.channelId,
               username: this.username,
             });
@@ -177,7 +172,7 @@ export class ChatComponent implements OnInit {
 
           console.log('Joining new channel:', this.channelId); // Log the new channelId
 
-          this.socket.emit('joinChannel', {
+          this.socketService.joinChannel({
             channelId: this.channelId,
             username: this.username,
           });
@@ -227,7 +222,7 @@ export class ChatComponent implements OnInit {
       console.log('Channel ID:', this.channelId);
       console.log('Message content:', this.currentMessage);
 
-      this.socket.emit('sendMessage', {
+      this.socketService.sendMessage({
         channelId: this.channelId,
         message: this.currentMessage,
         username: this.username,
@@ -267,7 +262,7 @@ export class ChatComponent implements OnInit {
         .subscribe({
           next: (data) => {
             console.log('Image sent successfully:', data);
-            this.socket.emit('sendImage', {
+            this.socketService.sendImage({
               channelId: this.channelId,
               username: this.username,
               avatarUrl: this.avatarUrl,
