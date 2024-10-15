@@ -29,7 +29,6 @@ router.post('/send-image', upload.single('image'), (req, res) => {
       return res.status(400).json({ error: 'No file uploaded' });
     }
   
-    // Correct the path to be served properly by the client
     const imageUrl = `${req.protocol}://${req.get('host')}/uploads/images/${req.file.filename}`;
     res.status(200).json({ message: 'Image uploaded successfully', imageUrl });
   });

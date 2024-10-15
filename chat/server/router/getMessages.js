@@ -18,7 +18,7 @@ router.post('/get-messages', async (req, res) => {
     // Ensure avatarUrl is correctly formatted before sending
     const messagesWithAvatarUrl = messages.map(message => ({
       ...message,
-      avatarUrl: message.avatar ? `/uploads/avatars/${message.avatar}` : '' // Update this path as needed
+      avatarUrl: message.avatar ? `../uploads/avatars/${message.avatar}` : '' 
     }));
 
     res.status(200).json(messagesWithAvatarUrl);

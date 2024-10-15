@@ -28,7 +28,7 @@ const userSchema = new Schema({
   },
   usergroup: { 
     type: String, 
-    default: 'default_group' // You can set a default group if not provided
+    default: 'default_group' //set a default group if not provided
   },
   userrole: { 
     type: String, 
@@ -36,7 +36,7 @@ const userSchema = new Schema({
   },
   avatar: {
     type: String, 
-    default: '' // This field will store the path to the avatar image
+    default: '' 
   }
 });
 
