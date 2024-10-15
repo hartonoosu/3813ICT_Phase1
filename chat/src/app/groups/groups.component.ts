@@ -134,16 +134,15 @@ export class GroupsComponent implements OnInit {
         }
       });
   }
+
   removeChannel(groupId: string, channelId: string): void {
-    // Use the _id field instead of channelId
     console.log("Deleting channel, payload:", { groupId, channelId });
   
     this.httpClient.delete(BACKEND_URL + `delete-channel?groupId=${groupId}&channelId=${channelId}`, httpOptions)
       .subscribe({
         next: () => {
           console.log("Channel deleted successfully");
-          // Refresh group and channel data after deletion
-          this.getGroups();
+          this.getGroups(); // Refresh group and channel data after deletion
         },
         error: (err) => {
           console.error("Error deleting channel:", err);
@@ -152,9 +151,6 @@ export class GroupsComponent implements OnInit {
       });
   }
   
-  
-  
-
   addUserToGroup(groupId: string): void {
     const trimmedUsername = this.newUserId[groupId]?.trim();
   
@@ -166,8 +162,7 @@ export class GroupsComponent implements OnInit {
     this.httpClient.post(BACKEND_URL + 'add-user-to-group', { groupId, username: trimmedUsername }, httpOptions)
       .subscribe({
         next: () => {
-          // Instead of relying on manual state manipulation, just reload the page
-          window.location.reload(); // This will refresh the page to reflect the changes
+          window.location.reload(); // Refresh the page to reflect the changes
         },
         error: (err) => {
           if (err.status === 400 && err.error.error === "User does not exist") {
@@ -181,7 +176,6 @@ export class GroupsComponent implements OnInit {
       });
   }
   
-
   removeUserFromGroup(groupId: string, userId: string): void {
     const group = this.groups.find(g => g._id === groupId);
     if (group) {
@@ -204,7 +198,6 @@ export class GroupsComponent implements OnInit {
         });
     }
   }
-  
 
   addUserToChannel(groupId: string, channelId: string): void {
     if (!this.newUserToChannel[groupId]) {
@@ -217,13 +210,11 @@ export class GroupsComponent implements OnInit {
       return;
     }
   
-    // Add the console log here to check the payload
     console.log("Adding user to channel, payload:", { groupId, channelId, username });
   
     this.httpClient.post(BACKEND_URL + 'add-user-to-channel', { groupId, channelId, username }, httpOptions)
       .subscribe({
         next: () => {
-          // Instead of relying on manual state manipulation, refresh the group data
           this.getGroups(); // Fetch the latest group data from the server
           this.newUserToChannel[groupId][channelId] = ''; // Clear the input field
         },
@@ -232,8 +223,6 @@ export class GroupsComponent implements OnInit {
         }
       });
   }
-  
-
 
   removeUserFromChannel(groupId: string, channelId: string, username: string): void {
     if (confirm(`Are you sure you want to remove ${username} from this channel?`)) {

@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { ChatComponent } from './chat.component';
 
 describe('ChatComponent', () => {
@@ -9,9 +8,10 @@ describe('ChatComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ChatComponent]
-    })
-    .compileComponents();
-    
+    }).compileComponents();
+  });
+
+  beforeEach(() => {
     fixture = TestBed.createComponent(ChatComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -19,5 +19,10 @@ describe('ChatComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should join channel', () => {
+    component.joinChannelById('test-channel');
+    expect(component.channelId).toBe('test-channel');
   });
 });

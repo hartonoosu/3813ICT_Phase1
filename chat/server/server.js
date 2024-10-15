@@ -96,6 +96,14 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('leaveChannel', ({ channelId, username }) => {
+    if (channelId) {
+      console.log(`${username} is leaving channel: ${channelId}`);
+      socket.leave(channelId);
+      io.to(channelId).emit('userLeft', `${username} has left the channel.`);
+    }
+  });
+
   socket.on('sendMessage', async ({ channelId, message, username, avatarUrl }) => {
     if (!channelId || !message || !username) {
       console.error(`Missing required fields - channelId: ${channelId}, message: ${message}, username: ${username}`);
@@ -167,7 +175,6 @@ io.on('connection', (socket) => {
     console.log('A user disconnected:', socket.id);
   });
 });
-
 
 // Start the server
 server.listen(PORT, () => {
