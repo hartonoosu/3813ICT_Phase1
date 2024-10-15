@@ -40,13 +40,6 @@ export class ChatComponent implements OnInit {
       return;
     }
 
-    // Debug session storage content
-    console.log('Session Storage Values:', {
-      username: sessionStorage.getItem('username'),
-      avatarUrl: sessionStorage.getItem('avatarUrl'),
-      userid: sessionStorage.getItem('userid'),
-    });
-
     // Initialize Socket.IO
     this.socketService.connect();
 
@@ -151,7 +144,7 @@ export class ChatComponent implements OnInit {
   joinChannel(event: Event): void {
     const target = event.target as HTMLSelectElement;
     const selectedChannelId = target.value;
-    console.log('Selected Channel ID:', selectedChannelId); // Add this line for debugging
+    console.log('Selected Channel ID:', selectedChannelId); 
     this.joinChannelById(selectedChannelId);
   }
   

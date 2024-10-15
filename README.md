@@ -1,5 +1,5 @@
 # 3813ICT_Phase1
-This is my second attempt at this assignment Phase 1. This project is about creating a basic chatting app with several functionalities, including managing users, groups, and chat channels.
+This is my second attempt at this assignment Phase 1. This project is about creating a basic chatting app with several functionalities, including managing users, groups, and the chat channel.
 
 ## Version Control
 
@@ -29,10 +29,7 @@ Necessary comments were added to explain why or how the code changed. This pract
 
 ## Data Structure
 
-Data structures used in both the client and server sides to represent the various entities.
-
-#### Client-Side Data Structures (Angular):
-All databases are stored in MongoDB. `userid` was stored as a string since I was trying to generate random alphabetic and numeric values. Data for `channelid` was also added. Please note that `usergroup` value is equal to `groupid`.
+Data structures used in both the client and server sides represent the various entities.
 
 ### Client-Side Data Structures (Angular)
 
@@ -45,93 +42,89 @@ All databases are stored in MongoDB. `userid` was stored as a string since I was
 |            | `userrole`   | string   |
 | **Group**  | `groupid`    | string   |
 |            | `groupname`  | string   |
-| **Message** | `username`  | string   |
+| **Message**| `username`   | string   |
 |            | `text`       | string   |
 |            | `timestamp`  | Date     |
-| **Channel** | `channelid` | string   |
-|            | `channelname`| string   |
+| **Channel**| `channelName`| string   |
+|            | `messages`   | string[] |
 
-### Server-Side Data Structures (Node.js)
+### Server-Side Data Structures (Node.js and Mongoose)
 
-| **Entity**       | **Property** | **Type** |
-|------------------|--------------|----------|
-| **User**         | `username`   | string   |
-|                  | `password`   | string   |
-| **Extended User**| `userid`     | string   |
-|                  | `username`   | string   |
-|                  | `useremail`  | string   |
-|                  | `usergroup`  | string   |
-|                  | `userrole`   | string   |
-| **Group** | `groupid`   | string   |
-|                  | `groupname`  | string   |
-| **Message** | `username` | string   |
-|                  | `text`       | string   |
-|                  | `timestamp`  | Date     |
-| **Channel** | `channelid` | string   |
-|                  | `channelname`| string   |
+| **Entity**       | **Property**    | **Type**                 |
+|------------------|-----------------|--------------------------|
+| **User**         | `username`      | string                   |
+|                  | `password`      | string                   |
+|                  | `useremail`     | string                   |
+|                  | `usergroup`     | string                   |
+|                  | `userrole`      | string                   |
+| **Group**        | `groupid`       | string                   |
+|                  | `groupname`     | string                   |
+| **Message**      | `username`      | string                   |
+|                  | `text`          | string                   |
+|                  | `timestamp`     | Date                     |
+| **Channel**      | `channelName`   | string                   |
+|                  | `messages`      | ObjectId[] (references to `Message`) |
 
 ## Angular Architecture
 
 The Angular application is structured using components, services, models, and routes to ensure modularity and maintainability.
 
-#### Components
+### Components
 1. **`NavbarComponent`**: Manages the navigation links based on user roles, including Super Admin, Group Admin, and regular users.
 2. **`ChatComponent`**: Handles real-time messaging between users.
-3. **`GroupsComponent`**: Manages the creation, deletion, and listing of user groups.
-4. **`ProfileComponent`**: Allows users to view and edit their profile details, also based on user roles. Super User can edit `useremail`, `usergroup`, and `userrole`. Group Admin can edit their own group and `useremail`, while a regular user can only edit their `useremail`.
+3. **`GroupsComponent`**: Manages the creation, deletion, and listing of user groups, including channels within a group.
+4. **`ProfileComponent`**: Allows users to view and edit their profile details, also based on user roles. Super User can edit `useremail`, `usergroup`, and `userrole`. Group Admin can edit their own group and `useremail`, while regular users can only edit their `useremail`.
 5. **`LoginComponent`**: Handles user authentication and login processes.
-6. **`AccountComponent`**: Displays user account details. Also used as a welcome page.
-7. **`Dashboard`**: Displays user history and activities.
-8. **`ChannelsComponent`**: Manages the creation and deletion of channels within a group.
+6. **`AccountComponent`**: Displays user account details. It also serves as a welcome page.
+7. **`DashboardComponent`**: Displays user history and activities.
 
-#### Services
+### Services
+
 1. **`AuthService`**: Manages user authentication, login/logout processes, and retrieves user roles.
 2. **`SocketService`**: Manages WebSocket connections for real-time communication.
 
-#### Models
+### Models
 1. **`User`**: Represents a user entity with properties like `userid`, `username`, `useremail`, `usergroup`, and `userrole`.
 2. **`Group`**: Represents a group entity with properties like `groupid`, and `groupname`.
 3. **`Message`**: Represents a message entity with properties like `username`, `text`, and `timestamp`.
-4. **`Channel`**: Represents a channel entity with properties like `channelid` and `channelname`.
+4. **`Channel`**: Represents a channel entity with properties like `channelName` and `messages`.
 
 ## Node Server Architecture
 
 The Node.js server is designed to handle the backend logic and serves as the API provider for the Angular frontend.
 
-#### Modules
+### Modules
 1. **Express.js**: Used for setting up the server and handling HTTP requests.
 2. **UUID**: Used to generate unique IDs for users and groups.
-3. **File System (fs)**: Used to read and write JSON data files for storing user and group information.
-4. **`FormsModule`**: Used for building and managing forms, including template-driven forms that rely on `ngModel` for two-way data binding.
-5. **`RouterModule`**: Facilitates routing within the application, linking components to specific URLs.
-6. **`CommonModule`**: Provides common directives like `NgIf` and `NgFor` that are used across components to display content conditionally and iterate over lists.
+3. **Mongoose**: Used for MongoDB interactions and schema definitions.
 
-#### Functions
+### Functions
 1. **Authentication Functions**:
    * **`postLogin.js`**: Handles user login by verifying credentials and returning the user's role.
    * **`postLoginAfter.js`**: Manages post-login actions and updates.
-
+   
 2. **User Management Functions**:
-   * **`postCreateUser.js`**: Creates a new user and updates the `users.json` and `extendedUsers.json` files.
-   * **`postRemoveUser.js`**: Deletes a user from the `users.json` and `extendedUsers.json` files.
+   * **`postCreateUser.js`**: Creates a new user and updates the database.
+   * **`postRemoveUser.js`**: Deletes a user from the database.
 
-3. **Channel Management Functions**:
-   * **`postCreateChannel.js`**: Creates a new channel and updates the `channels.json` file.
-   * **`postRemoveChannel.js`**: Deletes a channel from the `channels.json` file.
+3. **Channel and Group Management Functions**:
+   * **`manageGroups.js`**: Handles creating, updating, and deleting groups.
+   * **`manageChannels.js`**: Handles creating, updating, and deleting channels within groups.
+   * **`addUserToChannel.js`**: Adds a user to a specified channel.
+   * **`removeUserFromChannel.js`**: Removes a user from a specified channel.
 
-4. **Group Management Functions**:
-   * **`postCreateGroup.js`**: Creates a new group and updates the `groups.json` file.
-   * **`postRemoveGroup.js`**: Deletes a group from the `groups.json` file.
+4. **Messaging Functions**:
+   * **`getMessages.js`**: Retrieves messages from a specified channel.
+   * **`uploadImage.js`**: Handles uploading and associating images with messages.
+   * **`uploadAvatar.js`**: Handles user avatar uploads.
+   * **`getChannel.js`**: Retrieves information about a specific channel.
+   * **`getGroupsAndChannels.js`**: Retrieves information about groups and their associated channels.
 
-#### Files
+### Files
 1. **`server.js`**: Main server file that sets up the Express server and middleware.
-2. **`data/users.json`**: Stores basic user information for authentication.
-3. **`data/extendedUsers.json`**: Stores extended user profile information.
-4. **`data/channels.json`**: Stores channel information.
-5. **`data/groups.json`**: Stores group information.
-6. **`router/`**: Contains route handling files for different API endpoints.
+2. **`router/`**: Contains route handling files for different API endpoints.
 
-#### Global Variables
+### Global Variables
 1. **`PORT`**: The port on which the server listens (currently 3000).
 2. **`BACKEND_URL`**: URL for backend API calls (used in client-side services).
 
@@ -164,71 +157,76 @@ The Node.js server is designed to handle the backend logic and serves as the API
 | **Parameters** | `userid`                        |
 | **Returns** | `{ status }` indicating success or failure |
 
-### Channel Management Routes
-
-| **Route**   | `/createChannel`                   |
-|-------------|------------------------------------|
-| **Method**  | POST                               |
-| **Purpose** | Creates a new channel              |
-| **Parameters** | `channelname`                   |
-| **Returns** | `{ channelid, channelname }` if successful |
-
-| **Route**   | `/removeChannel`                   |
-|-------------|------------------------------------|
-| **Method**  | POST                               |
-| **Purpose** | Removes a channel                  |
-| **Parameters** | `channelid`                     |
-| **Returns** | `{ status }` indicating success or failure |
-
 ### Group Management Routes
 
-| **Route**   | `/createGroup`                     |
+| **Route**   | `/manageGroups`                    |
 |-------------|------------------------------------|
-| **Method**  | POST                               |
-| **Purpose** | Creates a new group                |
-| **Parameters** | `groupname`                     |
-| **Returns** | `{ groupid, groupname }` if successful |
-
-| **Route**   | `/removeGroup`                     |
-|-------------|------------------------------------|
-| **Method**  | POST                               |
-| **Purpose** | Removes a group                    |
-| **Parameters** | `groupid`                        |
+| **Method**  | POST, PUT, DELETE                  |
+| **Purpose** | Manages group creation, updating, and deletion |
+| **Parameters** | `groupid`, `groupname`          |
 | **Returns** | `{ status }` indicating success or failure |
 
-### WebSocket Routes
-1. **WebSocket Routes**: For real-time communication in the chat system.
+### Channel Management Routes
+
+| **Route**   | `/manageChannels`                  |
+|-------------|------------------------------------|
+| **Method**  | POST, PUT, DELETE                  |
+| **Purpose** | Manages channel creation, updating, and deletion within groups |
+| **Parameters** | `channelName`                   |
+| **Returns** | `{ status }` indicating success or failure |
+
+| **Route**   | `/getChannel`                      |
+|-------------|------------------------------------|
+| **Method**  | GET                                |
+| **Purpose** | Retrieves information about a specific channel |
+| **Parameters** | `channelId`                     |
+| **Returns** | `{ channel details }`              |
+
+| **Route**   | `/getGroupsAndChannels`            |
+|-------------|------------------------------------|
+| **Method**  | GET                                |
+| **Purpose** | Retrieves information about groups and their associated channels |
+| **Returns** | `{ groups and channels details }`  |
+
+### Messaging Routes
+
+| **Route**   | `/getMessages`                     |
+|-------------|------------------------------------|
+| **Method**  | GET                                |
+| **Purpose** | Retrieves messages from a channel  |
+| **Parameters** | `channelId`                     |
+| **Returns** | `messages`                         |
+
+| **Route**   | `/uploadImage`                     |
+|-------------|------------------------------------|
+| **Method**  | POST                               |
+| **Purpose** | Uploads an image to a channel      |
+| **Parameters** | `image`, `channelId`            |
+| **Returns** | `{ status }` indicating success or failure |
 
 ## Client-Server Interaction
 
 ### User Login
 1. **Client**: The `LoginComponent` sends the user’s credentials to the `/login` endpoint.
-2. **Server**: The server validates the credentials, retrieves the user’s role from `users.json`, and returns it.
+2. **Server**: The server validates the credentials, retrieves the user’s role from the database, and returns it.
 3. **Client**: The `AuthService` stores the user role in `sessionStorage`, and the `NavbarComponent` updates the displayed links accordingly.
 
-### User Management / Group Management
+### User Management
 1. **Client**: The `GroupsComponent` allows the Super Admin and Group Admin (limited to their own groups) to create or delete groups.
-2. **Server**: The server updates the `groups.json` file.
+2. **Server**: The server updates the group data in MongoDB.
 3. **Client**: The `GroupsComponent` updates the displayed list of groups based on the server's response.
 
 ### Profile Update
 1. **Client**: The user updates their profile using the `ProfileComponent`.
-2. **Server**: The server updates the corresponding entries in `extendedUsers.json` and returns a success message.
+2. **Server**: The server updates the corresponding entries in MongoDB and returns a success message.
 3. **Client**: The `ProfileComponent` reflects the updated information after a successful save.
 
-### Channel Management
-1. **Client**: The `ChannelsComponent` allows the creation or deletion of channels within a group.
-2. **Server**: The server updates the `channels.json` file and returns the updated channel list.
-3. **Client**: The `ChannelsComponent` updates the displayed list of channels based on the server's response.
+### Messaging
+1. **Client**: The `ChatComponent` sends a message to the channel using the `/getMessages` route.
+2. **Server**: The server stores the message in the `messages` collection in MongoDB and returns a success status.
+3. **Client**: The message appears in the chat window for all users in the channel.
 
-### Message Management
-1. **Client**: The `ChatComponent` sends a message to the server, including `username`, `text`, and `timestamp`.
-2. **Server**: The server processes the message and stores it in the appropriate location.
-3. **Client**: The `ChatComponent` updates the chat view with the new message.
-
-### Image Upload
-1. **Client**: The `ProfileComponent` or `ChatComponent` allows users to upload an avatar or send an image.
-2. **Server**: The server processes the image, stores it, and returns a success message.
-3. **Client**: The relevant component reflects the updated avatar or displays the uploaded image in the chat.
-
-
+### Uploading Images
+1. **Client**: The user selects an image to upload using the `ChatComponent`.
+2. **Server**: The image is uploaded via the `/uploadImage` route, stored in MongoDB, and the server returns a success status.
+3. **Client**: The image appears in the chat for all users in the channel.

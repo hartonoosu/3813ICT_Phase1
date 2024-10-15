@@ -16,7 +16,7 @@ import getGroupsAndChannels from './router/getGroupsAndChannels.js';
 import manageGroups from './router/manageGroups.js';
 import manageChannels from './router/manageChannels.js';
 import manageUsers from './router/manageUsers.js';
-import addUserToChannel from './router/addUserToChannel.js';
+import addUserToChannel from './router/addUSerToChannel.js';
 import removeUserFromChannel from './router/removeUserFromChannel.js';
 import getMessages from './router/getMessages.js';
 import getChannel from './router/getChannel.js'; // Correct import for channels
