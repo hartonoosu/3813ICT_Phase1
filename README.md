@@ -1,5 +1,5 @@
-# 3813ICT_Phase1
-This is my second attempt at this assignment Phase 1. This project is about creating a basic chatting app with several functionalities, including managing users, groups, and the chat channel.
+# 3813ICT_Phase2
+This project is about creating a basic chatting app with several functionalities, including managing users, groups, and the chat channel.
 
 ## Version Control
 
@@ -76,7 +76,7 @@ The Angular application is structured using components, services, models, and ro
 4. **`ProfileComponent`**: Allows users to view and edit their profile details, also based on user roles. Super User can edit `useremail`, `usergroup`, and `userrole`. Group Admin can edit their own group and `useremail`, while regular users can only edit their `useremail`.
 5. **`LoginComponent`**: Handles user authentication and login processes.
 6. **`AccountComponent`**: Displays user account details. It also serves as a welcome page.
-7. **`DashboardComponent`**: Displays user history and activities.
+
 
 ### Services
 
