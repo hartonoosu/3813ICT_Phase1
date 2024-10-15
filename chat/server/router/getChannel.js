@@ -1,5 +1,5 @@
 import express from 'express';
-import Group from '../models/Group.js';  // Assuming Group model is defined to manage groups and channels
+import Group from '../models/Group.js'; 
 
 const router = express.Router();
 
